@@ -1,0 +1,121 @@
+#:kivy 2.3.0
+
+<MainScreen>:
+    MDBoxLayout:
+        orientation: 'vertical'
+
+        MDTopAppBar:
+            md_bg_color: 0.827, 0.827, 0.827, 1
+
+            # Left custom icon
+            AnchorLayout:
+                anchor_x: 'left'
+                anchor_y: 'center'
+
+                MDIconButton:
+                    icon: "assets/icons/menu.png"
+                    icon_size: "48sp"
+                    on_release: app.on_menu_click()
+
+            # Right custom icon
+            AnchorLayout:
+                anchor_x: 'right'
+                anchor_y: 'bottom'
+
+                MDIconButton:
+                    icon: "assets/icons/magnify.png"
+                    icon_size: "36sp"
+                    theme_icon_color: "Custom"
+                    icon_color: 1, 1, 1, 1
+                    on_release: app.on_magnify_click()
+
+        MDBottomNavigation:
+            panel_color: 0.827, 0.827, 0.827, 1
+            MDBottomNavigationItem: #Butonul pentru account
+                name:"Account Screen"
+                text:"Account"
+                icon:"assets/icons/account.png"
+                MDScreen: #Ecran pentru atunci cand apesi butonul
+                    MDBoxLayout:
+                        pos_hint:{'center_x':0.5, 'center_y':0.5}
+                        orientation:'vertical'
+                        size_hint_y: 0.4
+                        size_hint_x: 0.4
+                        spacing: "40dp"
+                        MDLabel:
+                            text: "Welcome to the Account Screen!"
+                            halign: "center"
+            MDBottomNavigationItem:
+                name:"Health Screen"
+                text:"Health"
+                icon:"assets/icons/health.png"
+                MDScreen: #Ecran pentru atunci cand apesi butonul
+                    ScrollView:
+                        bar_width:0
+                        MDBoxLayout:
+                            orientation:'vertical'
+                            adaptive_height:True
+                            spacing:'20dp'
+                            padding:'20dp'
+                            MDLabel:
+                                text:'CATEGORIES'
+                                font_style:"Subtitle2"
+                            MDGridLayout:
+                                cols:2
+                                adapative_height:True
+                                spacing:'15dp'
+                                GridCard:
+                                    source:"assets/icons/pill.png"
+                                    text:"Medicine"
+                                GridCard:
+                                    source:"assets/icons/nurse.png"
+                                    text:"Appointments"
+                                GridCard:
+                                    source:"assets/icons/medical_data.png"
+                                    text:"Medical Data"
+                                GridCard:
+                                    source:"assets/icons/fitness.png"
+                                    text:"Fitness"
+                                GridCard:
+                                    source:"assets/icons/notification.png"
+                                    text:"Notifications"
+                                GridCard:
+                                    source:"assets/icons/chat.png"
+                                    text:"Chat"
+
+            MDBottomNavigationItem:
+                name:"Emergency Screen"
+                text:"Emergency"
+                icon:"assets/icons/emergency.png"
+                MDScreen: #Ecran pentru atunci cand apesi butonul
+                    MDBoxLayout:
+                        pos_hint:{'center_x':0.5, 'center_y':0.5}
+                        orientation:'vertical'
+                        size_hint_y: 0.4
+                        size_hint_x: 0.4
+                        spacing: "40dp"
+                        MDLabel:
+                            text: "Welcome to the Emergency Screen!"
+                            halign: "center"
+
+<GridCard@MDCard>:
+    ripple_behavior:True
+    orientation:'vertical'
+    source:''
+    radius:25
+    folder_size:''
+    text:''
+    padding:'20dp'
+    spacing:'20dp'
+    size_hint_y:None
+    height:'150dp'
+    elevation: 1
+    Image:
+        source:root.source
+    MDBoxLayout:
+        orientation:'vertical'
+        adaptive_height:True
+        MDLabel:
+            text:root.text
+            adaptive_height:True
+            halign:'center'

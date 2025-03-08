@@ -62,7 +62,9 @@
                                 font_style:"Subtitle2"
                             MDGridLayout:
                                 cols:2
-                                adapative_height:True
+                                adaptive_height:True
+                                size_hint_y: None
+                                height: self.minimum_height 
                                 spacing:'15dp'
                                 GridCard:
                                     source:"assets/icons/pill.png"

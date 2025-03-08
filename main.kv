@@ -1,6 +1,42 @@
 #:kivy 2.3.0
 
+ScreenManager:
+    LoginScreen:
+    MainScreen:
+
+<LoginScreen>:
+    name: "login"
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "20dp"
+        pos_hint: {"center_x": 0.5, "center_y": 0.5}
+        size_hint: (0.8, 0.6)
+
+        MDLabel:
+            text: "Login"
+            font_style: "H4"
+            halign: "center"
+
+        MDTextField:
+            id: username
+            hint_text: "Enter username"
+
+        MDTextField:
+            id: password
+            hint_text: "Enter password"
+            password: True
+
+        MDLabel:
+            id: login_status
+            text: ""
+            halign: "center"
+        MDRaisedButton:
+            text: "Login"
+            pos_hint: {"center_x": 0.5}
+            on_release: root.login()
+
 <MainScreen>:
+    name: "main"
     MDBoxLayout:
         orientation: 'vertical'
 

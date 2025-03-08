@@ -9,6 +9,7 @@ ScreenManager:
     MDBoxLayout:
         orientation: "vertical"
         padding: "20dp"
+        spacing: "20dp"
         pos_hint: {"center_x": 0.5, "center_y": 0.5}
         size_hint: (0.8, 0.6)
 
@@ -20,11 +21,13 @@ ScreenManager:
         MDTextField:
             id: username
             hint_text: "Enter username"
+            mode: "rectangle"
 
         MDTextField:
             id: password
             hint_text: "Enter password"
             password: True
+            mode: "rectangle"
 
         MDLabel:
             id: login_status

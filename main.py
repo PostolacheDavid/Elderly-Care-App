@@ -17,7 +17,7 @@ class LoginScreen(Screen):
         if username in USER_CREDITENTIALS and USER_CREDITENTIALS[username] == password:
             self.manager.current = "main"
         else:
-            self.ids.login_status.text = "[color=ff0000]Invalid Creditentials![/color]"
+            self.ids.login_status.text = "Invalid Creditentials!"
     
     def forgot_password(self):
         print("user_name123")

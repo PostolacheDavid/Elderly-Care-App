@@ -20,14 +20,18 @@ ScreenManager:
 
         MDTextField:
             id: username
-            hint_text: "Enter username"
-            mode: "rectangle"
+            #hint_text: "Enter username"
+            helper_text: "Enter username"
+            helper_text_mode: "persistent"
+            mode: "line"
 
         MDTextField:
             id: password
-            hint_text: "Enter password"
+            #hint_text: "Enter password"
+            helper_text: "Enter password"
+            helper_text_mode: "persistent"
             password: True
-            mode: "rectangle"
+            mode: "line"
 
         MDLabel:
             id: login_status

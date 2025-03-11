@@ -11,14 +11,14 @@ ScreenManager:
         orientation: "vertical"
         padding: "20dp"
         spacing: "20dp"
-        pos_hint: {"center_x": 0.5, "center_y": 0.5}
+        pos_hint: {"center_x": 0.5, "center_y": 0.4}
         size_hint: (0.8, 0.6)
 
         MDLabel:
             text: "Login"
             font_style: "H4"
             halign: "center"
-            padding: [0, 0, 0, 100]
+            padding: [0, 0, 0, 300]
             theme_text_color: "Custom"
             text_color: 0, 0, 1, 1
 
@@ -91,6 +91,13 @@ ScreenManager:
             text: "Login"
             pos_hint: {"center_x": 0.5}
             on_release: root.login()
+        MDLabel:
+            text: "[ref=link]Forgot Password?[/ref]"
+            markup: True
+            theme_text_color: "Custom"
+            text_color: 135/255, 206/255, 235/255
+            halign: "center"
+            on_ref_press: root.forgot_password()
 
 <MainScreen>:
     name: "main"

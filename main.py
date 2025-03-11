@@ -18,6 +18,9 @@ class LoginScreen(Screen):
             self.manager.current = "main"
         else:
             self.ids.login_status.text = "[color=ff0000]Invalid Creditentials![/color]"
+    
+    def forgot_password(self):
+        print("user_name123")
 
 class MainScreen(Screen):
     pass

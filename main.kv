@@ -18,20 +18,45 @@ ScreenManager:
             font_style: "H4"
             halign: "center"
 
-        MDTextField:
-            id: username
-            #hint_text: "Enter username"
-            helper_text: "Enter username"
-            helper_text_mode: "persistent"
-            mode: "line"
+        MDBoxLayout:
+            orientation: "horizontal"
+            spacing: "20dp"
+            size_hint_x: 0.8
+            pos_hint: {"center_x":0.5}
 
-        MDTextField:
-            id: password
-            #hint_text: "Enter password"
-            helper_text: "Enter password"
-            helper_text_mode: "persistent"
-            password: True
-            mode: "line"
+            MDIcon:
+                icon: "assets/icons/account.png"
+                size_hint_x: None
+                width: "40dp"
+                pos_hint: {"center_y":0.6}
+
+            MDTextField:
+                id: username
+                #hint_text: "Enter username"
+                helper_text: "Enter username"
+                helper_text_mode: "persistent"
+                mode: "line"
+                icon_left: "assets/icons/account.png"
+
+        MDBoxLayout:
+            orientation: "horizontal"
+            spacing: "20dp"
+            size_hint_x: 0.8
+            pos_hint: {"center_x":0.5}
+
+            MDIcon:
+                icon: "assets/icons/lock.png"
+                size_hint_x: None
+                width: "40dp"
+                pos_hint: {"center_y":0.6}
+
+            MDTextField:
+                id: password
+                #hint_text: "Enter password"
+                helper_text: "Enter password"
+                helper_text_mode: "persistent"
+                password: True
+                mode: "line"
 
         MDLabel:
             id: login_status

@@ -27,7 +27,12 @@ class MainScreen(Screen):
 
 class MainApp(MDApp):
     def build(self):
-        return Builder.load_file("main.kv")
+        sm = ScreenManager()
+
+        sm.add_widget(LoginScreen(name="login"))
+        sm.add_widget(MainScreen(name="main"))
+
+        return sm
     
     def on_menu_click(self):
         print("Menu button clicked!")

@@ -17,6 +17,7 @@ ScreenManager:
             text: "Login"
             font_style: "H4"
             halign: "center"
+            padding: [0, 0, 0, 100]
 
         MDBoxLayout:
             orientation: "horizontal"
@@ -30,12 +31,23 @@ ScreenManager:
                 width: "40dp"
                 pos_hint: {"center_y":0.6}
 
-            MDTextField:
-                id: username
-                #hint_text: "Enter username"
-                helper_text: "Enter username"
-                helper_text_mode: "persistent"
-                mode: "line"
+            MDBoxLayout:
+                orientation: "vertical"
+                size_hint_x: 0.8
+                pos_hint: {"center_x": 0.5}
+                spacing: "0dp"
+
+                MDLabel:
+                    id: helper_label
+                    text: "Enter username"
+                    theme_text_color: "Hint"
+                    font_style: "Caption"
+                    size_hint_y: 0.05
+                    height: self.texture_size[1]
+
+                MDTextField:
+                    id: username
+                    mode: "line"
 
         MDBoxLayout:
             orientation: "horizontal"
@@ -49,13 +61,24 @@ ScreenManager:
                 width: "40dp"
                 pos_hint: {"center_y":0.6}
 
-            MDTextField:
-                id: password
-                #hint_text: "Enter password"
-                helper_text: "Enter password"
-                helper_text_mode: "persistent"
-                password: True
-                mode: "line"
+            MDBoxLayout:
+                orientation: "vertical"
+                size_hint_x: 0.8
+                pos_hint: {"center_x": 0.5}
+                spacing: "0dp"
+
+                MDLabel:
+                    id: helper_label_pass
+                    text: "Enter password"
+                    theme_text_color: "Hint"
+                    font_style: "Caption"
+                    size_hint_y: 0.05
+                    height: self.texture_size[1]
+
+                MDTextField:
+                    id: password
+                    password: True
+                    mode: "line"
 
         MDLabel:
             id: login_status

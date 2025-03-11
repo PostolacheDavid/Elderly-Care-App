@@ -15,12 +15,13 @@ ScreenManager:
         size_hint: (0.8, 0.6)
 
         MDLabel:
-            text: "Login"
-            font_style: "H4"
+            text: "Elderly Care App"
+            font_style: "H3"
+            font_name: "assets/fonts/DancingScript-VariableFont_wght.ttf"
             halign: "center"
             padding: [0, 0, 0, 300]
             theme_text_color: "Custom"
-            text_color: 0, 0, 1, 1
+            text_color: 120/255, 190/255, 220/255
 
         MDBoxLayout:
             orientation: "horizontal"
@@ -96,12 +97,13 @@ ScreenManager:
         MDRaisedButton:
             text: "Login"
             pos_hint: {"center_x": 0.5}
+            size_hint_x: 0.8
             on_release: root.login()
         MDLabel:
             text: "[ref=link]Forgot Password?[/ref]"
             markup: True
             theme_text_color: "Custom"
-            text_color: 135/255, 206/255, 235/255
+            text_color: 120/255, 190/255, 220/255
             halign: "center"
             on_ref_press: root.forgot_password()
 

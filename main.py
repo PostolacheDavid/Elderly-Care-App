@@ -2,11 +2,12 @@ from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
+from kivy.properties import StringProperty
 
 USER_CREDITENTIALS = {
-    "doctor": "doctor123",
-    "elder": "elder123",
-    "caregiver": "caregiver"
+    "doctor": {"password": "doctor123", "role": "doctor"},
+    "elder": {"password": "elder123", "role": "elder"},
+    "caregiver": {"password": "care123", "role": "caregiver"}
 }
 
 class LoginScreen(Screen):
@@ -14,7 +15,9 @@ class LoginScreen(Screen):
         username = self.ids.username.text.strip()
         password = self.ids.password.text.strip()
 
-        if username in USER_CREDITENTIALS and USER_CREDITENTIALS[username] == password:
+        if username in USER_CREDITENTIALS and USER_CREDITENTIALS[username]["password"] == password:
+            user_role = USER_CREDITENTIALS[username]["role"]
+            self.manager.get_screen("main").user_role = user_role
             self.manager.current = "main"
         else:
             self.ids.login_status.text = "Invalid Creditentials!"
@@ -23,6 +26,10 @@ class LoginScreen(Screen):
         print("user_name123")
 
 class MainScreen(Screen):
+    user_role = StringProperty("")
+
+    def on_enter(self):
+        print(f"Hello {self.user_role}")
     pass
 
 class MainApp(MDApp):

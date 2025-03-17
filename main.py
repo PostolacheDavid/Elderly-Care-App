@@ -20,7 +20,7 @@ class LoginScreen(Screen):
             main_screen = self.manager.get_screen("main")
 
             main_screen.user_role = user_role
-            main_screen_username = username
+            main_screen.username = username
             main_screen.update_ui()
 
             self.manager.current = "main"
@@ -34,10 +34,22 @@ class MainScreen(Screen):
     user_role = StringProperty("")
 
     def on_enter(self):
-        self.update_ui()
+        self.update_ui(self)
 
-    def update_ui():
-        pass
+    def update_ui(self):
+        if self.use_role == "doctor":
+            self.ids.welcome_label.text = "Welcome, Doctor!"
+            self.ids.elder_section.opacity = 0
+            self.ids.caregiver_section.opacity = 0
+        elif self.user_role == "elder":
+            self.ids.welcome_label.text = "Welcome, Elder!"
+            self.ids.doctor_section.opacity = 0
+            self.ids.caregiver_section.opacity = 0
+        elif self.user_role == "caregiver":
+            self.ids.welcome_label.text = "Welcome, Caregiver!"
+            self.ids.doctor_section.opacity = 0
+            self.ids.elder_section.opacity = 0
+
 
 class MainApp(MDApp):
     def build(self):

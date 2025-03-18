@@ -17,7 +17,12 @@ class LoginScreen(Screen):
 
         if username in USER_CREDITENTIALS and USER_CREDITENTIALS[username]["password"] == password:
             user_role = USER_CREDITENTIALS[username]["role"]
-            self.manager.get_screen("main").user_role = user_role
+            main_screen = self.manager.get_screen("main")
+
+            main_screen.user_role = user_role
+            #main_screen.username = username
+            main_screen.update_ui()
+
             self.manager.current = "main"
         else:
             self.ids.login_status.text = "Invalid Creditentials!"
@@ -29,8 +34,16 @@ class MainScreen(Screen):
     user_role = StringProperty("")
 
     def on_enter(self):
-        print(f"Hello {self.user_role}")
-    pass
+        self.update_ui()
+
+    def update_ui(self):
+        if self.user_role == "doctor":
+            self.ids.health_manager.current = "doctor_health"
+        elif self.user_role == "elder":
+            self.ids.health_manager.current = "elder_health"
+        elif self.user_role == "caregiver":
+            self.ids.health_manager.current = "caregiver_health"
+
 
 class MainApp(MDApp):
     def build(self):

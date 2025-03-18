@@ -34,10 +34,10 @@ class MainScreen(Screen):
     user_role = StringProperty("")
 
     def on_enter(self):
-        self.update_ui(self)
+        self.update_ui()
 
     def update_ui(self):
-        if self.use_role == "doctor":
+        if self.user_role == "doctor":
             self.ids.welcome_label.text = "Welcome, Doctor!"
             self.ids.elder_section.opacity = 0
             self.ids.caregiver_section.opacity = 0

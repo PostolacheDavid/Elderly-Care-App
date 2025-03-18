@@ -138,90 +138,123 @@ ScreenManager:
                     icon_color: 1, 1, 1, 1
                     on_release: app.on_magnify_click()
 
-        ScreenManager:
-            id: content_manager
-
-            Screen:
-                name: "account"
-                MDBoxLayout:
-                    pos_hint:{'center_x':0.5, 'center_y':0.5}
-                    orientation:'vertical'
-                    size_hint_y: 0.4
-                    size_hint_x: 0.4
-                    spacing: "40dp"
-                    MDLabel:
-                        text: "Welcome to the Account Screen!"
-                        halign: "center"
-
-            Screen:
-                name: "health"
-                ScrollView:
-                    bar_width:0
-                    MDBoxLayout:
-                        orientation:'vertical'
-                        adaptive_height:True
-                        spacing:'20dp'
-                        padding:'20dp'
-                        MDLabel:
-                            text:'CATEGORIES'
-                            font_style:"Subtitle2"
-                        MDGridLayout:
-                            cols:2
-                            adaptive_height:True
-                            size_hint_y: None
-                            height: self.minimum_height 
-                            spacing:'15dp'
-                            GridCard:
-                                source:"assets/icons/pill.png"
-                                text:"Medicine"
-                            GridCard:
-                                source:"assets/icons/nurse.png"
-                                text:"Appointments"
-                            GridCard:
-                                source:"assets/icons/medical_data.png"
-                                text:"Medical Data"
-                            GridCard:
-                                source:"assets/icons/fitness.png"
-                                text:"Fitness"
-                            GridCard:
-                                source:"assets/icons/notification.png"
-                                text:"Notifications"
-                            GridCard:
-                                source:"assets/icons/chat.png"
-                                text:"Chat"
-
-            Screen:
-                name: "emergency"
-                MDBoxLayout:
-                    pos_hint:{'center_x':0.5, 'center_y':0.5}
-                    orientation:'vertical'
-                    size_hint_y: 0.4
-                    size_hint_x: 0.4
-                    spacing: "40dp"
-                    MDLabel:
-                        text: "Welcome to the Emergency Screen!"
-                        halign: "center"
-
-
         MDBottomNavigation:
-            MDBottomNavigationItem:
+            panel_color: 0.827, 0.827, 0.827, 1
+            MDBottomNavigationItem: #Butonul pentru account
                 name:"Account Screen"
                 text:"Account"
                 icon:"assets/icons/account.png"
-                on_tab_press: content_manager.current = "account"
-                   
+                MDScreen: #Ecran pentru atunci cand apesi butonul
+                    MDBoxLayout:
+                        pos_hint:{'center_x':0.5, 'center_y':0.5}
+                        orientation:'vertical'
+                        size_hint_y: 0.4
+                        size_hint_x: 0.4
+                        spacing: "40dp"
+                        MDLabel:
+                            text: "Welcome to the Account Screen!"
+                            halign: "center"
             MDBottomNavigationItem:
                 name:"Health Screen"
                 text:"Health"
                 icon:"assets/icons/health.png"
-                on_tab_press: content_manager.current = "health"
-                    
+                MDScreen: #Ecran pentru atunci cand apesi butonul
+                    ScreenManager:
+                        id: health_manager
+
+                        Screen:
+                            name: "doctor_health"
+                            ScrollView:
+                                bar_width:0
+                                MDBoxLayout:
+                                    orientation:'vertical'
+                                    adaptive_height:True
+                                    spacing:'20dp'
+                                    padding:'20dp'
+                                    MDLabel:
+                                        text:"Doctor's Health Dashboard"
+                                        font_style:"Subtitle2"
+                                    MDGridLayout:
+                                        cols:2
+                                        adaptive_height:True
+                                        size_hint_y: None
+                                        height: self.minimum_height 
+                                        spacing:'15dp'
+                                        GridCard:
+                                            source:"assets/icons/pill.png"
+                                            text:"Pacients Medicine"
+
+                        Screen:
+                            name: "elder_health"
+                            ScrollView:
+                                bar_width:0
+                                MDBoxLayout:
+                                    orientation:'vertical'
+                                    adaptive_height:True
+                                    spacing:'20dp'
+                                    padding:'20dp'
+                                    MDLabel:
+                                        text:"Elder's Health Dashboard"
+                                        font_style:"Subtitle2"
+                                    MDGridLayout:
+                                        cols:2
+                                        adaptive_height:True
+                                        size_hint_y: None
+                                        height: self.minimum_height 
+                                        spacing:'15dp'
+                                        GridCard:
+                                            source:"assets/icons/pill.png"
+                                            text:"Medicine"
+                                        GridCard:
+                                            source:"assets/icons/nurse.png"
+                                            text:"Appointments"
+                                        GridCard:
+                                            source:"assets/icons/medical_data.png"
+                                            text:"Medical Data"
+                                        GridCard:
+                                            source:"assets/icons/fitness.png"
+                                            text:"Fitness"
+                                        GridCard:
+                                            source:"assets/icons/notification.png"
+                                            text:"Notifications"
+                                        GridCard:
+                                            source:"assets/icons/chat.png"
+                                            text:"Chat"
+
+                        Screen:
+                            name: "caregiver_health"
+                            ScrollView:
+                                bar_width:0
+                                MDBoxLayout:
+                                    orientation:'vertical'
+                                    adaptive_height:True
+                                    spacing:'20dp'
+                                    padding:'20dp'
+                                    MDLabel:
+                                        text:"Elder's Health Dashboard"
+                                        font_style:"Subtitle2"
+                                    MDGridLayout:
+                                        cols:2
+                                        adaptive_height:True
+                                        size_hint_y: None
+                                        height: self.minimum_height 
+                                        spacing:'15dp'
+
+
             MDBottomNavigationItem:
                 name:"Emergency Screen"
                 text:"Emergency"
                 icon:"assets/icons/emergency.png"
-                on_tab_press: content_manager.current = "emergency"
-                    
+                MDScreen: #Ecran pentru atunci cand apesi butonul
+                    MDBoxLayout:
+                        pos_hint:{'center_x':0.5, 'center_y':0.5}
+                        orientation:'vertical'
+                        size_hint_y: 0.4
+                        size_hint_x: 0.4
+                        spacing: "40dp"
+                        MDLabel:
+                            text: "Welcome to the Emergency Screen!"
+                            halign: "center"
 
 <GridCard@MDCard>:
     ripple_behavior:True

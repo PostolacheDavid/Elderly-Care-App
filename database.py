@@ -35,7 +35,7 @@ def check_user(username, password):
         cursor = conn.cursor(dictionary=True)
 
         query = "SELECT password, role FROM users WHERE username=%s"
-        cursor.execute(query, (username,))  # ✅ Pass only one parameter
+        cursor.execute(query, (username,))
 
         user = cursor.fetchone()
         conn.close()

@@ -144,7 +144,7 @@ ScreenManager:
                                 icon_size: "36sp"
                                 theme_icon_color: "Custom"
                                 icon_color: 1, 1, 1, 1
-                                on_release: app.on_magnify_click()
+                                #on_release: app.on_magnify_click()
 
                     MDBottomNavigation:
                         panel_color: 0.827, 0.827, 0.827, 1
@@ -266,6 +266,8 @@ ScreenManager:
         
         MDNavigationDrawer:
             id: nav_drawer
+            radius: [0, 40, 40, 0]
+            md_bg_color: 0.95, 0.95, 0.95, 1
 
             MDBoxLayout:
                 orientation: "vertical"
@@ -273,14 +275,27 @@ ScreenManager:
                 spacing: "15dp"
 
                 MDLabel:
-                    text: "Navigation"
+                    text: "Menu"
+                    theme_text_color: "Custom"
+                    text_color: 120/255, 190/255, 220/255
                     font_style: "H6"
                     size_hint_y: None
                     height: self.texture_size[1]
+                
+                MDSeparator:
+                    height: "4dp"
+
+                Widget:
+                    size_hint_y: 1
+            
+                
                 MDFlatButton:
                     text: "Home"
                     on_release:
-                        nav_drawer.set_state("close")
+                        app.close_drawer()
+
+                MDSeparator:
+                    height: "1dp"
                 
                 MDFlatButton:
                     text: "Logout"

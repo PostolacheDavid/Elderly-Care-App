@@ -56,7 +56,12 @@ class MainApp(MDApp):
 
         return sm
     
+    def close_drawer(self):
+        nav_drawer = self.root.get_screen("main").ids.nav_drawer
+        nav_drawer.set_state("close")
+    
     def log_out(self):
+        self.close_drawer()
         self.root.current = "login"
 
 if __name__ == '__main__':

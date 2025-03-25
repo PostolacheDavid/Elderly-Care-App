@@ -5,6 +5,8 @@ from kivy.lang import Builder
 from kivy.properties import StringProperty
 from database import check_user
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.button import MDFlatButton
 
 class LoginScreen(Screen):
 
@@ -48,6 +50,9 @@ class MainScreen(Screen):
 
 
 class MainApp(MDApp):
+
+    dialog = None
+
     def build(self):
         sm = ScreenManager()
 
@@ -60,7 +65,31 @@ class MainApp(MDApp):
         nav_drawer = self.root.get_screen("main").ids.nav_drawer
         nav_drawer.set_state("close")
     
-    def log_out(self):
+    def show_logout_dialog(self):
+        if not self.dialog:
+            self.dialog = MDDialog(
+                title="Log Out?",
+                text="Are you sure you want to log out?",
+                buttons = [
+                    MDFlatButton(
+                        text="Cancel",
+                        on_release=self.close_dialog
+                    ),
+                    MDFlatButton(
+                        text="Yes",
+                        on_release=self.confirm_logout
+
+                    ),
+                ],
+            )
+        self.dialog.open()
+
+    def close_dialog(self, *args):
+        if self.dialog:
+            self.dialog.dismiss()
+
+    def confirm_logout(self, *args):
+        self.dialog.dismiss()
         self.close_drawer()
         self.root.current = "login"
 

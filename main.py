@@ -7,7 +7,14 @@ from database import check_user
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
 
 class LoginScreen(Screen):
+
+    def clean_text(self):
+        self.ids.username.text = ""
+        self.ids.password.text = ""
+        self.ids.login_status.text = ""
+
     def login(self):
+
         username = self.ids.username.text.strip()
         password = self.ids.password.text.strip()
 
@@ -21,6 +28,7 @@ class LoginScreen(Screen):
             main_screen.update_ui()
 
             self.manager.current = "main"
+            self.clean_text()
         else:
             self.ids.login_status.text = "Invalid Creditentials"
 
@@ -48,11 +56,8 @@ class MainApp(MDApp):
 
         return sm
     
-    def on_menu_click(self):
-        print("Menu button clicked!")
-    
-    def on_magnify_click(self):
-        print("Magnify button clicked!")
+    def log_out(self):
+        self.root.current = "login"
 
 if __name__ == '__main__':
     MainApp().run()

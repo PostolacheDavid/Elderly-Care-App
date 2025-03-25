@@ -34,6 +34,9 @@ class LoginScreen(Screen):
         else:
             self.ids.login_status.text = "Invalid Creditentials"
 
+class DoctorRegisterScreen(Screen):
+    pass
+
 class MainScreen(Screen):
     user_role = StringProperty("")
 
@@ -58,6 +61,7 @@ class MainApp(MDApp):
 
         sm.add_widget(LoginScreen(name="login"))
         sm.add_widget(MainScreen(name="main"))
+        sm.add_widget(DoctorRegisterScreen(name="doctor_register"))
 
         return sm
     

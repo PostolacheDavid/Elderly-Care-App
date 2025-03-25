@@ -3,6 +3,7 @@
 ScreenManager:
     LoginScreen:
     MainScreen:
+    DoctorRegisterScreen:
 
 <LoginScreen>:
     name: "login"
@@ -107,6 +108,24 @@ ScreenManager:
             text_color: 120/255, 190/255, 220/255
             halign: "center"
             on_ref_press: root.forgot_password()
+        MDLabel:
+            text: "[ref=link]Don't have an account?[/ref]"
+            markup: True
+            theme_text_color: "Custom"
+            text_color: 120/255, 190/255, 220/255
+            halign: "center"
+            on_ref_press: app.root.current = "doctor_register"
+
+<DoctorRegisterScreen>:
+    name: "doctor_register"
+    md_bg_color: 0.827, 0.827, 0.827, 1
+    MDBoxLayout:
+        orientation: "vertical"
+        padding: "20dp"
+        spacing: "30dp"
+        pos_hint: {"center_x": 0.5, "center_y": 0.4}
+        size_hint: (0.8, 0.6)
+
 
 <MainScreen>:
     name: "main"

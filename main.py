@@ -4,9 +4,19 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
 from kivy.properties import StringProperty
 from database import check_user
+from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
+from kivymd.uix.dialog import MDDialog
+from kivymd.uix.button import MDFlatButton
 
 class LoginScreen(Screen):
+
+    def clean_text(self):
+        self.ids.username.text = ""
+        self.ids.password.text = ""
+        self.ids.login_status.text = ""
+
     def login(self):
+
         username = self.ids.username.text.strip()
         password = self.ids.password.text.strip()
 
@@ -20,6 +30,7 @@ class LoginScreen(Screen):
             main_screen.update_ui()
 
             self.manager.current = "main"
+            self.clean_text()
         else:
             self.ids.login_status.text = "Invalid Creditentials"
 
@@ -39,6 +50,9 @@ class MainScreen(Screen):
 
 
 class MainApp(MDApp):
+
+    dialog = None
+
     def build(self):
         sm = ScreenManager()
 
@@ -47,11 +61,37 @@ class MainApp(MDApp):
 
         return sm
     
-    def on_menu_click(self):
-        print("Menu button clicked!")
+    def close_drawer(self):
+        nav_drawer = self.root.get_screen("main").ids.nav_drawer
+        nav_drawer.set_state("close")
     
-    def on_magnify_click(self):
-        print("Magnify button clicked!")
+    def show_logout_dialog(self):
+        if not self.dialog:
+            self.dialog = MDDialog(
+                title="Log Out?",
+                text="Are you sure you want to log out?",
+                buttons = [
+                    MDFlatButton(
+                        text="Cancel",
+                        on_release=self.close_dialog
+                    ),
+                    MDFlatButton(
+                        text="Yes",
+                        on_release=self.confirm_logout
+
+                    ),
+                ],
+            )
+        self.dialog.open()
+
+    def close_dialog(self, *args):
+        if self.dialog:
+            self.dialog.dismiss()
+
+    def confirm_logout(self, *args):
+        self.dialog.dismiss()
+        self.close_drawer()
+        self.root.current = "login"
 
 if __name__ == '__main__':
     MainApp().run()

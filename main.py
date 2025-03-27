@@ -7,6 +7,25 @@ from database import check_user
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
+from kivy.uix.filechooser import FileChooserListView
+from kivy.uix.boxlayout import BoxLayout
+import os
+import shutil
+
+class FileChooserContent(BoxLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.orientation = "vertical"
+        self.padding = 10
+        self.spacing = 10
+        self.size_hint_y = None
+        self.height = "400dp"
+
+        self.chooser = FileChooserListView(
+            filters=["*.png", "*.jpg", "*.jpeg"],
+            size_hint=(1, 1)
+        )
+        self.add_widget(self.chooser)
 
 class LoginScreen(Screen):
 
@@ -35,7 +54,32 @@ class LoginScreen(Screen):
             self.ids.login_status.text = "Invalid Creditentials"
 
 class DoctorRegisterScreen(Screen):
-    pass
+    selected_photo_path = None
+    file_dialog = None
+
+    def open_file_chooser(self):
+        self.file_chooser_content = FileChooserContent()
+
+        self.file_dialog = MDDialog (
+            title="Select a photo",
+            type="custom",
+            md_bg_color=(0.2, 0.2, 0.2, 1),
+            content_cls=self.file_chooser_content,
+            buttons=[
+                MDFlatButton(text="Cancel", on_release=lambda *x: self.file_dialog.dismiss()),
+                MDFlatButton(text="Select", on_release=self.select_file),
+            ]
+        )
+        self.file_dialog.open()
+
+    def select_file(self, *args):
+        filechooser = self.file_chooser_content.chooser
+        if filechooser.selection:
+            self.selected_photo_path = filechooser.selection[0]
+            self.ids.file_name_label.text = os.path.basename(self.selected_photo_path)
+            print(f"Selcted file ${self.selected_photo_path}")
+        shutil.copy(self.selected_photo_path, "assets")
+        self.file_dialog.dismiss()
 
 class MainScreen(Screen):
     user_role = StringProperty("")

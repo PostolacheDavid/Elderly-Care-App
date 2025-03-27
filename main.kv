@@ -120,6 +120,12 @@ ScreenManager:
     name: "doctor_register"
     md_bg_color: 0.827, 0.827, 0.827, 1
 
+    MDFlatButton:
+        text: "<- Back"
+        halign: "left"
+        on_release:
+            app.root.current = "login"
+
     MDBoxLayout:
         orientation: "vertical"
         spacing: "20dp"
@@ -230,6 +236,29 @@ ScreenManager:
                 password: True
                 mode: "fill"
                 size_hint_x: 0.6
+        
+        MDBoxLayout:
+            orientation: "horizontal"
+            spacing: "20dp"
+            size_hint_x: 1
+            pos_hint: {"center_x": 0.5}
+            size_hint_y: None
+            height: "60dp"
+
+            MDLabel:
+                text: "Degree"
+                size_hint_x: 0.4
+                halign: "right"
+                valign: "middle"
+                theme_text_color: "Primary"
+                size_hint_y: None
+                height: self.texture_size[1]
+                pos_hint: {"center_y": 0.4}
+
+            MDRaisedButton:
+                text: "Upload Photo"
+                pos_hint: {"center_x": 0.5}
+                on_release: root.open_file_chooser()
                 
 
 

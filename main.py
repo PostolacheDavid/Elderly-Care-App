@@ -1,3 +1,4 @@
+from plyer import filechooser
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -7,7 +8,6 @@ from database import check_user
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
-from kivy.uix.filechooser import FileChooserListView
 from kivy.uix.boxlayout import BoxLayout
 import os
 import shutil
@@ -58,28 +58,19 @@ class DoctorRegisterScreen(Screen):
     file_dialog = None
 
     def open_file_chooser(self):
-        self.file_chooser_content = FileChooserContent()
-
-        self.file_dialog = MDDialog (
+        file_path = filechooser.open_file(
             title="Select a photo",
-            type="custom",
-            md_bg_color=(0.2, 0.2, 0.2, 1),
-            content_cls=self.file_chooser_content,
-            buttons=[
-                MDFlatButton(text="Cancel", on_release=lambda *x: self.file_dialog.dismiss()),
-                MDFlatButton(text="Select", on_release=self.select_file),
-            ]
+            filters=[("Images", "*.jpg;*.png;*.jpeg")],
+            multiple=False
         )
-        self.file_dialog.open()
 
-    def select_file(self, *args):
-        filechooser = self.file_chooser_content.chooser
-        if filechooser.selection:
-            self.selected_photo_path = filechooser.selection[0]
-            self.ids.file_name_label.text = os.path.basename(self.selected_photo_path)
-            print(f"Selcted file ${self.selected_photo_path}")
-        shutil.copy(self.selected_photo_path, "assets")
-        self.file_dialog.dismiss()
+        if file_path:
+            self.selected_photo_path = file_path[0]
+            print(f"Selected: {self.selected_photo_path}")
+
+            # Optional: Update a label in the UI
+            if "file_name_label" in self.ids:
+                self.ids.file_name_label.text = os.path.basename(self.selected_photo_path)
 
 class MainScreen(Screen):
     user_role = StringProperty("")

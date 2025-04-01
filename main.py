@@ -12,21 +12,6 @@ from kivy.uix.boxlayout import BoxLayout
 import os
 import shutil
 
-class FileChooserContent(BoxLayout):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.orientation = "vertical"
-        self.padding = 10
-        self.spacing = 10
-        self.size_hint_y = None
-        self.height = "400dp"
-
-        self.chooser = FileChooserListView(
-            filters=["*.png", "*.jpg", "*.jpeg"],
-            size_hint=(1, 1)
-        )
-        self.add_widget(self.chooser)
-
 class LoginScreen(Screen):
 
     def clean_text(self):

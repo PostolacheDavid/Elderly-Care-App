@@ -53,9 +53,6 @@ class DoctorRegisterScreen(Screen):
             self.selected_photo_path = file_path[0]
             print(f"Selected: {self.selected_photo_path}")
 
-            # Optional: Update a label in the UI
-            if "file_name_label" in self.ids:
-                self.ids.file_name_label.text = os.path.basename(self.selected_photo_path)
 
 class MainScreen(Screen):
     user_role = StringProperty("")

@@ -245,9 +245,15 @@ ScreenManager:
             size_hint_y: None
             height: "60dp"
 
+            Widget:
+                size_hint_y: None
+                width: "0dp"
+
             MDLabel:
                 text: "Degree"
-                size_hint_x: 0.4
+                font_size: "18sp"
+                size_hint_y: None
+                size_hint_x: None
                 halign: "right"
                 valign: "middle"
                 theme_text_color: "Primary"
@@ -255,10 +261,20 @@ ScreenManager:
                 height: self.texture_size[1]
                 pos_hint: {"center_y": 0.4}
 
+            Widget:
+                size_hint_y: None
+                width: "0dp"
+
             MDRaisedButton:
                 text: "Upload Photo"
                 pos_hint: {"center_x": 0.5}
                 on_release: root.open_file_chooser()
+            
+        MDRaisedButton:
+            text: "Create Account"
+            pos_hint: {"center_x": 0.5}
+            size_hint_x: 0.8
+            on_release: root.login()
                 
 
 

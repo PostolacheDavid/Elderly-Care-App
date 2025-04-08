@@ -43,15 +43,33 @@ class DoctorRegisterScreen(Screen):
     file_dialog = None
 
     def open_file_chooser(self):
-        file_path = filechooser.open_file(
+        file_paths = filechooser.open_file(
             title="Select a photo",
-            filters=[("Images", "*.jpg;*.png;*.jpeg")],
+            filters=[("Images", "*.jpg;*.jpeg;*.png")],
             multiple=False
         )
 
-        if file_path:
-            self.selected_photo_path = file_path[0]
-            print(f"Selected: {self.selected_photo_path}")
+        if file_paths:
+            selected_path = file_paths[0]
+            print(f"Selected file: {selected_path}")
+
+            destination_dir = "assets"
+            os.makedirs(destination_dir, exist_ok=True)  # creează dacă nu există
+
+            file_name = os.path.basename(selected_path)
+            destination_path = os.path.join(destination_dir, file_name)
+
+            try:
+                # Copiază doar dacă fișierul nu există deja
+                if not os.path.exists(destination_path):
+                    shutil.copy2(selected_path, destination_path)
+                    print(f"File copied to: {destination_path}")
+                else:
+                    print(f"File already exists: {destination_path}")
+            except Exception as e:
+                print(f"Copy failed: {e}")
+
+
 
 
 class MainScreen(Screen):
@@ -67,6 +85,8 @@ class MainScreen(Screen):
             self.ids.health_manager.current = "elder_health"
         elif self.user_role == "caregiver":
             self.ids.health_manager.current = "caregiver_health"
+        elif self.user_role == "admin":
+            self.ids.health_manager.current = "admin"
 
 
 class MainApp(MDApp):

@@ -5,6 +5,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
 from kivy.properties import StringProperty
 from database import check_user
+from database import submit_doctor_request
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
@@ -42,6 +43,19 @@ class DoctorRegisterScreen(Screen):
     selected_photo_path = None
     file_dialog = None
 
+    def show_popup(self, message):
+        dialog = MDDialog(
+            title="Doctor Registration",
+            text=message,
+            buttons = [
+                MDFlatButton (
+                    text="OK",
+                    on_release=lambda x: dialog.dismiss()
+                )
+            ]
+        )
+        dialog.open()
+
     def open_file_chooser(self):
         file_paths = filechooser.open_file(
             title="Select a photo",
@@ -50,24 +64,38 @@ class DoctorRegisterScreen(Screen):
         )
 
         if file_paths:
-            selected_path = file_paths[0]
-            print(f"Selected file: {selected_path}")
+            self.selected_photo_path = file_paths[0]
+            print(f"Selected file: {self.selected_photo_path}")
 
-            destination_dir = "assets"
-            os.makedirs(destination_dir, exist_ok=True)  # creează dacă nu există
+    def submit_request(self):
+        full_name = self.ids.full_name.text.strip()
+        email = self.ids.email.text.strip()
+        password = self.ids.password.text.strip()
+        confirm_pass = self.ids.rewrite_password.text.strip()
 
-            file_name = os.path.basename(selected_path)
-            destination_path = os.path.join(destination_dir, file_name)
+        if not full_name or not email or not password or not confirm_pass:
+            self.show_popup("All fields are required.")
+            return
 
-            try:
-                # Copiază doar dacă fișierul nu există deja
-                if not os.path.exists(destination_path):
-                    shutil.copy2(selected_path, destination_path)
-                    print(f"File copied to: {destination_path}")
-                else:
-                    print(f"File already exists: {destination_path}")
-            except Exception as e:
-                print(f"Copy failed: {e}")
+        if password != confirm_pass:
+            self.show_popup("Passwords do not match")
+            return
+        
+        if not self.selected_photo_path:
+            self.show_popup("Please select a photo before submitting.")
+            return
+        
+        try:
+            with open(self.selected_photo_path, "rb") as f:
+                photo_data = f.read()
+
+            success = submit_doctor_request(full_name, email, password, photo_data)
+            if success:
+                self.show_popup("Request has been sent successfully!")
+            else:
+                self.show_popup("Failed to submit request.")
+        except Exception as e:
+            self.show_popup(f"An error occurred:\n{e}")
 
 
 

@@ -162,7 +162,7 @@ ScreenManager:
                 pos_hint: {"center_y": 0.4}
 
             MDTextField:
-                id: username
+                id: full_name
                 mode: "fill"
                 size_hint_x: 0.6
         
@@ -274,7 +274,7 @@ ScreenManager:
             text: "Create Account"
             pos_hint: {"center_x": 0.5}
             size_hint_x: 0.8
-            on_release: root.login()
+            on_release: root.submit_request()
                 
 
 

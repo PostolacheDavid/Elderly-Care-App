@@ -1,5 +1,29 @@
 #:kivy 2.3.0
 
+<ApproveItem@MDBoxLayout>:
+    full_name: ""
+    email: ""
+    doctor_id: 0
+    orientation: "vertical"
+    spacing: dp(10)
+    padding: dp(10)
+    size_hint_y: None
+    height: dp(140)
+    md_bg_color: 0.95, 0.95, 1, 1
+
+    MDLabel:
+        text: "Name: " + root.full_name
+        theme_text_color: "Primary"
+
+    MDLabel:
+        text: "Email: " + root.email
+        theme_text_color: "Secondary"
+
+    MDRaisedButton:
+        text: "Approve"
+        on_release:
+            app.root.get_screen("main").approve_account(root.doctor_id)
+
 ScreenManager:
     LoginScreen:
     MainScreen:
@@ -439,7 +463,18 @@ ScreenManager:
                                                     GridCard:
                                                         source:"assets/icons/padlock.png"
                                                         text:"Approve Accounts"
+                                                        on_release: root.approve_accounts_screen()
+                                    Screen:
+                                        name: "admin_approve_accounts"
 
+                                        ScrollView:
+                                            MDBoxLayout:
+                                                id: approve_list
+                                                orientation: "vertical"
+                                                spacing: "10dp"
+                                                padding: "20dp"
+                                                size_hint_y: None
+                                                height: self.minimum_height
 
                         MDBottomNavigationItem:
                             name:"Emergency Screen"

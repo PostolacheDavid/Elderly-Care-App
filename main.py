@@ -3,15 +3,24 @@ from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
-from kivy.properties import StringProperty
+from kivy.properties import StringProperty, NumericProperty
 from database import check_user
-from database import submit_doctor_request
+from database import submit_doctor_request, get_pending_doctors, approve_doctor
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
-from kivy.uix.boxlayout import BoxLayout
+from kivymd.uix.label import MDLabel
+from kivymd.uix.button import MDRaisedButton
+from kivy.metrics import dp
+from kivymd.uix.boxlayout import MDBoxLayout
+from functools import partial
 import os
 import shutil
+
+class ApproveItem(MDBoxLayout):
+    full_name = StringProperty()
+    email = StringProperty()
+    doctor_id = NumericProperty()
 
 class LoginScreen(Screen):
 
@@ -116,6 +125,29 @@ class MainScreen(Screen):
         elif self.user_role == "admin":
             self.ids.health_manager.current = "admin"
 
+    def approve_account(self, doctor_id):
+        if approve_doctor(doctor_id):
+            print(f"Doctor ID {doctor_id} approved!")
+            self.approve_accounts_screen()
+        else:
+            print("Approval failed.")
+
+    def approve_accounts_screen(self):
+        self.ids.health_manager.current = "admin_approve_accounts"
+        container = self.ids.approve_list
+        container.clear_widgets()
+
+        pending_list = get_pending_doctors()
+
+        for doctor in pending_list:
+            item = ApproveItem(
+                full_name=doctor["full_name"],
+                email=doctor["email"],
+                doctor_id=doctor["id"]
+            )
+            container.add_widget(item)
+
+ 
 
 class MainApp(MDApp):
 

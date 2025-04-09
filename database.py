@@ -71,3 +71,38 @@ def submit_doctor_request(full_name, email, password, photo_data):
     except Exception as ex:
         print(f"General Error: {ex}")
         return False
+    
+def get_pending_doctors():
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("SELECT id, full_name, email FROM pending_doctors")
+        results = cursor.fetchall()
+
+        conn.close()
+        return results
+    except mysql.connector.Error as e:
+        print(f"MySQL Error: {e}")
+        return []
+
+def approve_doctor(doctor_id):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+        cursor.execute("SELECT full_name, email, password, photo FROM pending_doctors where id = %s", (doctor_id,))
+        doctor = cursor.fetchone()
+
+        if doctor:
+            cursor.execute(
+                "INSERT INTO users (username, password, role) VALUES (%s, %s, %s)",
+                (doctor[0], doctor[2], "doctor")
+            )
+            cursor.execute("DELETE FROM pending_doctors WHERE id = %s", (doctor_id,))
+            conn.commit()
+
+        conn.close()
+        return True
+    except mysql.connector.Error as e:
+        print(f"MySql Errir: {e}")
+        return False

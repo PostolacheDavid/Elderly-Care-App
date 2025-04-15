@@ -3,7 +3,7 @@ from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
-from kivy.properties import StringProperty, NumericProperty
+from kivy.properties import StringProperty, NumericProperty, ObjectProperty
 from database import check_user
 from database import submit_doctor_request, get_pending_doctors, approve_doctor
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
@@ -14,13 +14,22 @@ from kivymd.uix.button import MDRaisedButton
 from kivy.metrics import dp
 from kivymd.uix.boxlayout import MDBoxLayout
 from functools import partial
+from kivy.core.image import Image as CoreImage
 import os
 import shutil
+import io
+import base64
 
 class ApproveItem(MDBoxLayout):
     full_name = StringProperty()
     email = StringProperty()
     doctor_id = NumericProperty()
+    image_texture = ObjectProperty(None)
+
+    def on_image_data(self, instance, value):
+        if value:
+            image = CoreImage(io.BytesIO(value), ext='png')
+            self.image_texture = image.texture
 
 class LoginScreen(Screen):
 
@@ -145,6 +154,10 @@ class MainScreen(Screen):
                 email=doctor["email"],
                 doctor_id=doctor["id"]
             )
+            if doctor["photo"]:
+                image = CoreImage(io.BytesIO(doctor["photo"]), ext="png")
+                item.image_texture = image.texture
+                
             container.add_widget(item)
 
  

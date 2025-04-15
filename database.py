@@ -77,7 +77,7 @@ def get_pending_doctors():
         conn = mysql.connector.connect(**DB_CONFIG)
         cursor = conn.cursor(dictionary=True)
 
-        cursor.execute("SELECT id, full_name, email FROM pending_doctors")
+        cursor.execute("SELECT id, full_name, email, photo FROM pending_doctors")
         results = cursor.fetchall()
 
         conn.close()

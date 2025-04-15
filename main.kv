@@ -4,6 +4,7 @@
     full_name: ""
     email: ""
     doctor_id: 0
+    image_texture: None
     orientation: "vertical"
     spacing: dp(10)
     padding: dp(10)
@@ -11,18 +12,30 @@
     height: dp(140)
     md_bg_color: 0.95, 0.95, 1, 1
 
-    MDLabel:
-        text: "Name: " + root.full_name
-        theme_text_color: "Primary"
+    Image:
+        size_hint_x: 0.3
+        texture: root.image_texture
+        allow_stretch: True
+        keep_ratio: True
+    
+    MDBoxLayout:
+        orientation: "vertical"
+        spacing: dp(5)
 
-    MDLabel:
-        text: "Email: " + root.email
-        theme_text_color: "Secondary"
+        MDLabel:
+            text: "Name: " + root.full_name
+            theme_text_color: "Primary"
 
-    MDRaisedButton:
-        text: "Approve"
-        on_release:
-            app.root.get_screen("main").approve_account(root.doctor_id)
+        MDLabel:
+            text: "Email: " + root.email
+            theme_text_color: "Secondary"
+
+        MDRaisedButton:
+            text: "Approve"
+            size_hint_x: None
+            width: dp(100)
+            on_release:
+                app.root.get_screen("main").approve_account(root.doctor_id)
 
 ScreenManager:
     LoginScreen:

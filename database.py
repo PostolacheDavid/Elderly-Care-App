@@ -12,6 +12,27 @@ DB_CONFIG = {
     "database": "elderly_care"
 }
 
+""" def register_admin(username, password):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+
+        # Hash the password
+        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+        # Insert into users table
+        query = "INSERT INTO users (username, password, role) VALUES (%s, %s, %s)"
+        cursor.execute(query, (username, hashed_password, "admin"))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        print("Admin registered successfully.")
+        return True
+    except mysql.connector.Error as e:
+        print(f"MySQL Error: {e}")
+        return False """
+
 def register_user(username, password, role):
     try:
         conn = mysql.connector.connect(**DB_CONFIG)

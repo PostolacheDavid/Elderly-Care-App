@@ -9,33 +9,38 @@
     spacing: dp(10)
     padding: dp(10)
     size_hint_y: None
-    height: dp(140)
+    height: dp(250)
     md_bg_color: 0.95, 0.95, 1, 1
+    photo_data: None
 
     Image:
-        size_hint_x: 0.3
+        size_hint: None, None
+        size: dp(150), dp(150)
+        pos_hint: {"center_x": 0.5}
         texture: root.image_texture
         allow_stretch: True
         keep_ratio: True
-    
-    MDBoxLayout:
-        orientation: "vertical"
-        spacing: dp(5)
+        on_touch_down:
+            if self.collide_point(*args[1].pos): app.root.get_screen("main").preview_image(root.photo_data)
 
-        MDLabel:
-            text: "Name: " + root.full_name
-            theme_text_color: "Primary"
 
-        MDLabel:
-            text: "Email: " + root.email
-            theme_text_color: "Secondary"
+    MDLabel:
+        text: "Name: " + root.full_name
+        theme_text_color: "Primary"
+        halign: "center"
 
-        MDRaisedButton:
-            text: "Approve"
-            size_hint_x: None
-            width: dp(100)
-            on_release:
-                app.root.get_screen("main").approve_account(root.doctor_id)
+    MDLabel:
+        text: "Email: " + root.email
+        theme_text_color: "Secondary"
+        halign: "center"
+
+    MDRaisedButton:
+        text: "Approve"
+        size_hint: None, None
+        size: dp(120), dp(40)
+        pos_hint: {"center_x": 0.5}
+        on_release:
+            app.root.get_screen("main").approve_account(root.doctor_id)
 
 ScreenManager:
     LoginScreen:

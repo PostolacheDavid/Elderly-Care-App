@@ -14,6 +14,7 @@ from kivymd.uix.button import MDRaisedButton
 from kivy.metrics import dp
 from kivymd.uix.boxlayout import MDBoxLayout
 from functools import partial
+from kivy.uix.image import Image
 from kivy.core.image import Image as CoreImage
 import os
 import shutil
@@ -25,6 +26,7 @@ class ApproveItem(MDBoxLayout):
     email = StringProperty()
     doctor_id = NumericProperty()
     image_texture = ObjectProperty(None)
+    photo_data = ObjectProperty()
 
     def on_image_data(self, instance, value):
         if value:
@@ -121,6 +123,44 @@ class DoctorRegisterScreen(Screen):
 class MainScreen(Screen):
     user_role = StringProperty("")
 
+    def preview_image(self, image_bytes):
+        if not image_bytes:
+            return
+            
+        image_widget = Image(
+            texture=CoreImage(io.BytesIO(image_bytes), ext="png").texture,
+            size_hint=(1, None),
+            height=dp(300),
+            allow_stretch=True,
+        )
+
+        content = MDBoxLayout(
+            orientation="vertical",
+            spacing=dp(10),
+            padding=dp(10),
+            size_hint_y=None,
+            height=image_widget.height + dp(60)
+        )
+        content.add_widget(image_widget)
+        
+        dialog = MDDialog(
+            title="Photo Preview",
+            type="custom",
+            content_cls=content,
+            buttons=[
+                MDFlatButton(
+                    text="CLOSE",
+                    size_hint=(None, None),
+                    width=dp(100),
+                    height=dp(36),
+                    pos_hint={"center_x": 0.5},
+                    on_release=lambda x: dialog.dismiss()
+                )
+            ],
+            auto_dismiss=False
+        )
+        dialog.open()
+
     def on_enter(self):
         self.update_ui()
 
@@ -149,10 +189,18 @@ class MainScreen(Screen):
         pending_list = get_pending_doctors()
 
         for doctor in pending_list:
+            image_texture = None
+            photo_data = doctor["photo"] if "photo" in doctor else None
+
+            if photo_data:
+                image_texture = CoreImage(io.BytesIO(photo_data), ext="png").texture
+
             item = ApproveItem(
                 full_name=doctor["full_name"],
                 email=doctor["email"],
-                doctor_id=doctor["id"]
+                doctor_id=doctor["id"],
+                image_texture=image_texture,
+                photo_data=photo_data
             )
             if doctor["photo"]:
                 image = CoreImage(io.BytesIO(doctor["photo"]), ext="png")

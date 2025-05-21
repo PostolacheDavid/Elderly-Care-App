@@ -12,7 +12,7 @@ DB_CONFIG = {
     "database": "elderly_care"
 }
 
-""" def register_admin(username, password):
+def register_admin(username, password):
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
         cursor = conn.cursor()
@@ -31,7 +31,7 @@ DB_CONFIG = {
         return True
     except mysql.connector.Error as e:
         print(f"MySQL Error: {e}")
-        return False """
+        return False
 
 def register_user(username, password, role):
     try:

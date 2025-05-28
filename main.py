@@ -45,12 +45,14 @@ class LoginScreen(Screen):
         username = self.ids.username.text.strip()
         password = self.ids.password.text.strip()
 
-        user_role = check_user(username, password)
+        user_data = check_user(username, password)
 
-        if user_role:
+        if user_data:
+            role, user_id = user_data
             main_screen = self.manager.get_screen("main")
 
-            main_screen.user_role = user_role
+            main_screen.user_role = role
+            main_screen.user_id = user_id
             main_screen.username = username
             main_screen.update_ui()
 
@@ -122,6 +124,7 @@ class DoctorRegisterScreen(Screen):
 
 class MainScreen(Screen):
     user_role = StringProperty("")
+    user_id = NumericProperty(0)
 
     def preview_image(self, image_bytes):
         if not image_bytes:

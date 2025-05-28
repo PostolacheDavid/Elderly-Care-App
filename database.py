@@ -55,7 +55,7 @@ def check_user(username, password):
         conn = mysql.connector.connect(**DB_CONFIG)
         cursor = conn.cursor(dictionary=True)
 
-        query = "SELECT password, role FROM users WHERE username=%s"
+        query = "SELECT id, password, role FROM users WHERE username=%s"
         cursor.execute(query, (username,))
 
         user = cursor.fetchone()
@@ -63,12 +63,13 @@ def check_user(username, password):
         
         if user and "password" in user:
             if bcrypt.checkpw(password.encode(), user["password"].encode()):
-                return user["role"]
+                return user["role"], user["id"]
         return None
-    
+
     except mysql.connector.Error as e:
-        print(f"MySql Error: {e}")
+        print(f"MySQL Error: {e}")
         return None
+
     
 def submit_doctor_request(full_name, email, password, photo_data):
     try:
@@ -127,3 +128,25 @@ def approve_doctor(doctor_id):
     except mysql.connector.Error as e:
         print(f"MySql Errir: {e}")
         return False
+    
+def create_linked_user(full_name, email, password, role, doctor_id):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+
+        hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+
+        cursor.execute("""
+            INSERT INTO users (username, password, role, doctor_id)
+            VALUES (%s, %s, %s, %s)
+        """, (email, hashed_password, role, doctor_id))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return True
+
+    except mysql.connector.Error as e:
+        print(f"MySQL Error: {e}")
+        return False
+

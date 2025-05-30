@@ -129,17 +129,25 @@ def approve_doctor(doctor_id):
         print(f"MySql Errir: {e}")
         return False
     
-def create_linked_user(full_name, email, password, role, doctor_id):
+def create_linked_user(full_name, email, password, role, doctor_id, elder_id=None):
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
         cursor = conn.cursor()
 
         hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
-        cursor.execute("""
-            INSERT INTO users (username, password, role, doctor_id)
-            VALUES (%s, %s, %s, %s)
-        """, (email, hashed_password, role, doctor_id))
+        if role == "caregiver":
+            query = """
+                INSERT INTO users (username, password, role, doctor_id, elder_id)
+                VALUES (%s, %s, %s, %s, %s)
+            """
+            cursor.execute(query, (email, hashed_password, role, doctor_id, elder_id))
+        else:
+            query = """
+                INSERT INTO users (username, password, role, doctor_id)
+                VALUES (%s, %s, %s, %s)
+            """
+            cursor.execute(query, (email, hashed_password, role, doctor_id))
 
         conn.commit()
         cursor.close()
@@ -149,4 +157,25 @@ def create_linked_user(full_name, email, password, role, doctor_id):
     except mysql.connector.Error as e:
         print(f"MySQL Error: {e}")
         return False
+
+def get_elders_by_doctor(doctor_id):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor(dictionary=True)
+
+        query = """
+        SELECT id, username
+        FROM users
+        WHERE role = 'elder' AND doctor_id = %s
+        """
+        cursor.execute(query, (doctor_id,))
+        elders = cursor.fetchall()
+
+        conn.close()
+        return elders
+
+    except mysql.connector.Error as e:
+        print(f"MySQL Error: {e}")
+        return []
+
 

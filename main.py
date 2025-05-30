@@ -5,7 +5,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
 from kivy.properties import StringProperty, NumericProperty, ObjectProperty
 from database import check_user
-from database import submit_doctor_request, get_pending_doctors, approve_doctor
+from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
@@ -13,6 +13,8 @@ from kivymd.uix.label import MDLabel
 from kivymd.uix.button import MDRaisedButton
 from kivy.metrics import dp
 from kivymd.uix.boxlayout import MDBoxLayout
+from kivymd.uix.menu import MDDropdownMenu
+from kivymd.uix.button import MDFlatButton
 from functools import partial
 from kivy.uix.image import Image
 from kivy.core.image import Image as CoreImage
@@ -119,17 +121,18 @@ class DoctorRegisterScreen(Screen):
         except Exception as e:
             self.show_popup(f"An error occurred:\n{e}")
 
-
-
-
 class MainScreen(Screen):
     user_role = StringProperty("")
     user_id = NumericProperty(0)
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.elders_list = []
+
     def preview_image(self, image_bytes):
         if not image_bytes:
             return
-            
+
         image_widget = Image(
             texture=CoreImage(io.BytesIO(image_bytes), ext="png").texture,
             size_hint=(1, None),
@@ -145,7 +148,7 @@ class MainScreen(Screen):
             height=image_widget.height + dp(60)
         )
         content.add_widget(image_widget)
-        
+
         dialog = MDDialog(
             title="Photo Preview",
             type="custom",
@@ -208,8 +211,114 @@ class MainScreen(Screen):
             if doctor["photo"]:
                 image = CoreImage(io.BytesIO(doctor["photo"]), ext="png")
                 item.image_texture = image.texture
-                
+
             container.add_widget(item)
+
+    def create_elder_screen(self):
+        self.ids.health_manager.current = "create_elder"
+
+    def create_caregiver_screen(self):
+        self.ids.health_manager.current = "create_caregiver"
+
+    def submit_elder(self):
+        full_name = self.ids.elder_full_name.text.strip()
+        email = self.ids.elder_email.text.strip()
+        password = self.ids.elder_password.text.strip()
+        confirm_pass = self.ids.elder_confirm_password.text.strip()
+
+        if not all([full_name, email, password, confirm_pass]):
+            self.show_popup("All elder fields are required.")
+            return
+
+        if password != confirm_pass:
+            self.show_popup("Elder passwords do not match.")
+            return
+
+        success = create_linked_user(full_name, email, password, "elder", self.user_id)
+
+        if success:
+            self.show_popup("Elder account created successfully.")
+        else:
+            self.show_popup("Failed to create elder account.")
+
+    def submit_caregiver(self):
+        full_name = self.ids.caregiver_full_name.text.strip()
+        email = self.ids.caregiver_email.text.strip()
+        password = self.ids.caregiver_password.text.strip()
+        confirm_pass = self.ids.caregiver_confirm_password.text.strip()
+        elder_username = self.selected_elder_username
+
+        if not all([full_name, email, password, confirm_pass, elder_username]):
+            self.show_popup("All caregiver fields are required.")
+            return
+
+        if password != confirm_pass:
+            self.show_popup("Caregiver passwords do not match.")
+            return
+
+        elder = next((e for e in self.elders_list if e["username"] == elder_username), None)
+
+        if not elder:
+            self.show_popup("Selected elder not found.")
+            return
+
+        success = create_linked_user(full_name, email, password, "caregiver", self.user_id, elder["id"])
+
+        if success:
+            self.show_popup("Caregiver account created successfully.")
+        else:
+            self.show_popup("Failed to create caregiver account.")
+
+    def show_popup(self, message):
+        dialog = MDDialog(
+            title="Notice",
+            text=message,
+            buttons=[MDFlatButton(text="OK", on_release=lambda x: dialog.dismiss())]
+        )
+        dialog.open()
+
+    def open_elder_menu(self):
+        """Open or refresh the elder selection dropdown menu."""
+        # 1. Get the list of elders for the current doctor (user_id should be available)
+        doctor_id = self.user_id  # assuming user_id is stored in this attribute
+        self.elders_list = get_elders_by_doctor(doctor_id)  # fetch list of elder dicts
+
+        # 2. Build menu items for each elder username
+        menu_items = []
+        for elder in self.elders_list:
+            menu_items.append({
+                "text": elder["username"],            # display elder's username
+                "viewclass": "OneLineListItem",       # use a simple list item view
+                # When this item is clicked, call a selection handler with this elder
+                "on_release": lambda x=elder: self.select_elder(x)
+            })
+
+        # 3. If a dropdown menu already exists, dismiss it to refresh items
+        if hasattr(self, "elder_menu"):
+            self.elder_menu.dismiss()
+
+        # 4. Create a new dropdown menu for the current elder list and open it
+        self.elder_menu = MDDropdownMenu(
+            caller=self.ids.elder_field,   # the UI element that triggers the dropdown
+            items=menu_items,
+            width_mult=4                   # width of the dropdown menu
+        )
+        self.elder_menu.open()
+
+    def select_elder(self, elder):
+        """Handle selection of an elder from the dropdown."""
+        # 5. Update the text field to show the selected elder’s username
+        self.ids.elder_field.text = elder["username"]
+        # Save the selected elder’s username for later (submit_caregiver can use this)
+        self.selected_elder_username = elder["username"]
+        # 6. Close the dropdown menu now that an item is selected
+        self.elder_menu.dismiss()
+        # Optionally, remove focus from the text field to hide keyboard (if any)
+        self.ids.elder_field.focus = False
+
+    def set_elder_dropdown(self, text):
+        self.ids.elder_dropdown.set_item(text)
+        self.elder_menu.dismiss()
 
  
 
@@ -223,7 +332,6 @@ class MainApp(MDApp):
         sm.add_widget(LoginScreen(name="login"))
         sm.add_widget(MainScreen(name="main"))
         sm.add_widget(DoctorRegisterScreen(name="doctor_register"))
-
         return sm
     
     def close_drawer(self):

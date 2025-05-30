@@ -403,6 +403,115 @@ ScreenManager:
                                                     GridCard:
                                                         source:"assets/icons/pill.png"
                                                         text:"Pacients Medicine"
+                                                    GridCard:
+                                                        source:"assets/icons/pacients.png"
+                                                        text:"Add Pacients"
+                                                        on_release: root.create_elder_screen()
+                                                    GridCard:
+                                                        source:"assets/icons/caregiver.png"
+                                                        text:"Add Pacients"
+                                                        on_release: root.create_caregiver_screen()
+                                    Screen:
+                                        name: "create_elder"
+
+                                        ScrollView:
+                                            MDBoxLayout:
+                                                orientation: "vertical"
+                                                spacing: "20dp"
+                                                padding: "20dp"
+                                                size_hint_y: None
+                                                height: self.minimum_height
+
+                                                MDLabel:
+                                                    text: "Create Elder Account"
+                                                    halign: "center"
+                                                    font_style: "H5"
+                                                    theme_text_color: "Custom"
+                                                    text_color: 120/255, 190/255, 220/255
+
+                                                MDTextField:
+                                                    id: elder_full_name
+                                                    hint_text: "Full Name"
+                                                    mode: "fill"
+
+                                                MDTextField:
+                                                    id: elder_email
+                                                    hint_text: "Email"
+                                                    mode: "fill"
+
+                                                MDTextField:
+                                                    id: elder_password
+                                                    hint_text: "Password"
+                                                    password: True
+                                                    mode: "fill"
+
+                                                MDTextField:
+                                                    id: elder_confirm_password
+                                                    hint_text: "Confirm Password"
+                                                    password: True
+                                                    mode: "fill"
+
+                                                MDRaisedButton:
+                                                    text: "Create Elder"
+                                                    pos_hint: {"center_x": 0.5}
+                                                    on_release: root.submit_elder()
+
+                                    Screen:
+                                        name: "create_caregiver"
+
+                                        ScrollView:
+                                            MDBoxLayout:
+                                                orientation: "vertical"
+                                                spacing: "20dp"
+                                                padding: "20dp"
+                                                size_hint_y: None
+                                                height: self.minimum_height
+
+                                                MDLabel:
+                                                    text: "Create Caregiver Account"
+                                                    halign: "center"
+                                                    font_style: "H5"
+                                                    theme_text_color: "Custom"
+                                                    text_color: 120/255, 190/255, 220/255
+
+                                                MDTextField:
+                                                    id: caregiver_full_name
+                                                    hint_text: "Full Name"
+                                                    mode: "fill"
+
+                                                MDTextField:
+                                                    id: caregiver_email
+                                                    hint_text: "Email"
+                                                    mode: "fill"
+
+                                                MDTextField:
+                                                    id: caregiver_password
+                                                    hint_text: "Password"
+                                                    password: True
+                                                    mode: "fill"
+
+                                                MDTextField:
+                                                    id: caregiver_confirm_password
+                                                    hint_text: "Confirm Password"
+                                                    password: True
+                                                    mode: "fill"
+
+                                                MDTextField:
+                                                    id: elder_field
+                                                    hint_text: "Select Elder"
+                                                    text: ""                # start with no text so hint_text is visible
+                                                    readonly: True          # prevent manual typing (selection only)
+                                                    icon_right: "chevron-down"   # optional: drop-down icon on the right
+                                                    icon_right_color: app.theme_cls.primary_color
+                                                    pos_hint: {"center_x": 0.5, "top": 0.9}   # adjust positioning as needed
+                                                    size_hint_x: 0.8        # adjust width as needed
+                                                    on_focus: if self.focus: root.open_elder_menu()
+
+                                                MDRaisedButton:
+                                                    text: "Create Caregiver"
+                                                    pos_hint: {"center_x": 0.5}
+                                                    on_release: root.submit_caregiver()
+
 
                                     Screen:
                                         name: "elder_health"
@@ -546,6 +655,8 @@ ScreenManager:
                     text: "Logout"
                     on_release:
                         app.show_logout_dialog()
+
+
 
 <GridCard@MDCard>:
     ripple_behavior:True

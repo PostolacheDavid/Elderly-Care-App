@@ -5,7 +5,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
 from kivy.properties import StringProperty, NumericProperty, ObjectProperty
 from database import check_user
-from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor
+from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor, add_elder_medication, get_medications_for_elder, get_elder_id_for_caregiver, delete_elder_medication, get_medications_with_id_for_elder, add_medical_control, get_controls_for_elder, delete_medical_control
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
@@ -22,6 +22,67 @@ import os
 import shutil
 import io
 import base64
+import json
+from kivymd.uix.list import OneLineListItem
+from kivy.factory import Factory
+from kivymd.toast import toast
+from kivy.clock import Clock
+
+class ElderControlItem(MDBoxLayout):
+    # These must match the KV rule’s usage of root.name, root.goal, etc.
+    name = StringProperty()
+    goal = StringProperty()
+    details = StringProperty()
+    scheduled_at = StringProperty()
+
+class DoctorControlItem(MDBoxLayout):
+    # These must match exactly what you later pass in from Python
+    control_id = NumericProperty()
+    name       = StringProperty()
+    goal       = StringProperty()
+    details    = StringProperty()
+    scheduled_at = StringProperty()
+
+
+class MedicationSearchDialog(MDBoxLayout):
+    def __init__(self, callback, meds_data, **kwargs):
+        super().__init__(**kwargs)
+        self.callback = callback
+        self.full_data = meds_data
+        self.dialog = None  # va fi setat din exterior
+        self.filter_medications("")
+
+    def filter_medications(self, search_text):
+        filtered = [
+            {
+                "text": med.get("Denumire comerciala", "Necunoscut"),
+                "on_release": lambda med=med: self.select_med(med)
+            }
+            for med in self.full_data
+            if search_text.lower() in med.get("Denumire comerciala", "").lower()
+        ]
+        self.ids.med_rv.data = filtered
+
+    def select_med(self, med):
+        self.callback(med)
+        if self.dialog:
+            self.dialog.dismiss()
+
+class ViewMedicationsScreen(MDScreen):
+    def on_pre_enter(self):
+        app = MDApp.get_running_app()
+        if app.root.get_screen("main").user_role == "elder":
+            app.root.get_screen("main").view_medications_screen()
+            print("Elder is viewing meds – refreshing list")
+
+
+class DoctorMedItem(MDBoxLayout):
+    med_id = NumericProperty()
+    denumire = StringProperty()
+    forma = StringProperty()
+    concentratie = StringProperty()
+    frecventa = StringProperty()
+    observatii = StringProperty()
 
 class ApproveItem(MDBoxLayout):
     full_name = StringProperty()
@@ -129,6 +190,15 @@ class MainScreen(Screen):
         super().__init__(**kwargs)
         self.elders_list = []
 
+    def on_kv_post(self, base_widget):
+        meds_path = os.path.join(os.path.dirname(__file__), "meds.json")
+        try:
+            with open(meds_path, "r", encoding="utf-8") as f:
+                self.meds_data = json.load(f)
+        except Exception as e:
+            print(f"Error loading meds.json: {e}")
+            self.meds_data = []
+
     def preview_image(self, image_bytes):
         if not image_bytes:
             return
@@ -177,6 +247,8 @@ class MainScreen(Screen):
             self.ids.health_manager.current = "elder_health"
         elif self.user_role == "caregiver":
             self.ids.health_manager.current = "caregiver_health"
+            self.elder_id = get_elder_id_for_caregiver(self.user_id)
+            print("Elder ID asociat caregiverului:", self.elder_id)
         elif self.user_role == "admin":
             self.ids.health_manager.current = "admin"
 
@@ -320,7 +392,543 @@ class MainScreen(Screen):
         self.ids.elder_dropdown.set_item(text)
         self.elder_menu.dismiss()
 
- 
+    def load_elder_medications_for_caregiver(self):
+        # 1. Găsim elder_id asociat caregiver-ului
+        elder_id = get_elder_id_for_caregiver(self.user_id)  # trebuie ca self.user_id să fie setat corect la login
+
+        if elder_id is None:
+            self.show_alert_dialog("Acest îngrijitor nu are asociat niciun pacient.")
+            return
+
+        # 2. Luăm medicamentele elder-ului
+        medications = get_medications_for_elder(elder_id)
+
+        # 3. Golim lista actuală
+        self.ids.medications_list.clear_widgets()
+
+        # 4. Populăm cu medicamente
+        for med in medications:
+            label = MDLabel(
+                text=f"\n\n{med['denumire_comerciala']} \n {med['forma_farmaceutica']} \n {med['concentratie']} \n {med['frecventa']} \n {med.get('observatii', '')}",
+                size_hint_y=None,
+                height=dp(40)
+            )
+            self.ids.medications_list.add_widget(label)
+
+        # 5. Navigăm la ecranul cu medicamente
+        self.ids.health_manager.current = "view_medications_care"
+
+
+    def load_medications(self):
+        try:
+            with open("meds.json", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Eroare la încărcarea meds.json: {e}")
+            return []
+        
+    def open_medication_dialog(self):
+        if not hasattr(self, "meds_data") or not self.meds_data:
+            return
+
+        content = MedicationSearchDialog(callback=self.select_medication, meds_data=self.meds_data)
+        
+        self.dialog = MDDialog(
+            title="Selectează medicament",
+            type="custom",
+            content_cls=content,
+            buttons=[],
+        )
+        
+        # Trimite referința dialogului în content
+        content.dialog = self.dialog
+
+        self.dialog.open()
+        
+    def open_medication_menu(self):
+        menu_items = []
+        for med in self.meds_data:
+            text = med.get("Denumire comerciala", "Necunoscut")
+            menu_items.append({
+                "text": text,
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x=med: self.select_medication(x)
+            })
+
+        if hasattr(self, "med_menu"):
+            self.med_menu.dismiss()
+
+        self.med_menu = MDDropdownMenu(
+            caller=self.ids.med_name,
+            items=menu_items,
+            width_mult=4
+        )
+        self.med_menu.open()
+
+    def select_medication(self, med):
+        self.selected_medication_from_list = med
+        self.ids.med_name.text = med.get("Denumire comerciala", "")
+        self.ids.med_forma.text = med.get("Forma farmaceutica", "")
+        self.ids.med_conc.text = med.get("Concentratie", "")
+        
+        # Închide meniul doar dacă există
+        if hasattr(self, "med_menu"):
+            self.med_menu.dismiss()
+
+        # Închide dialogul dacă a fost folosit cu search
+        if hasattr(self, "dialog"):
+            self.dialog.dismiss()
+
+
+    def add_medication_screen(self):
+        self.ids.health_manager.current = "add_medication"
+        print("EXEMPLU MEDICAMENT:", self.meds_data[0])
+    
+    def view_medications_doctor(self, elder_id):
+        print(f"[DEBUG] view_medications_doctor() called with elder_id={elder_id}")
+        try:
+            medications = get_medications_with_id_for_elder(elder_id)
+            print(f"[DEBUG] get_medications_with_id_for_elder({elder_id}) returned: {medications!r}")
+        except Exception as e:
+            print(f"[ERROR] get_medications_with_id_for_elder({elder_id}) raised exception: {e}")
+            medications = []
+
+        container = self.ids.doctor_meds_list
+        container.clear_widgets()
+
+        if not medications:
+            print("[DEBUG] No medications found; adding ‘no meds’ label.")
+            container.add_widget(
+                MDLabel(
+                    text="There is no registered medication.",
+                    halign="center",
+                    size_hint_y=None,
+                    height=dp(50)
+                )
+            )
+            return
+
+        for med in medications:
+            print(f"[DEBUG] Adding widget for med: {med}")
+            item = Factory.DoctorMedItem(
+                med_id=med["id"],
+                denumire=med["denumire_comerciala"],
+                forma=med["forma_farmaceutica"],
+                concentratie=med["concentratie"],
+                frecventa=med["frecventa"],
+                observatii=med["observatii"]
+            )
+            # (No need to set size_hint_y/height here because the KV rule already does that.)
+            container.add_widget(item)
+
+
+    def open_elder_menu_for_doctor_view(self):
+        print("[DEBUG] open_elder_menu_for_doctor_view() called")
+
+        # 1) Print a message *before* calling the DB helper:
+        print(f"[DEBUG] About to call get_elders_by_doctor with doctor_id={self.user_id}")
+
+        try:
+            self.elders_list = get_elders_by_doctor(self.user_id)
+            # 2) This print will only run if no exception is thrown above:
+            print(f"[DEBUG] Elders for doctor_id={self.user_id}: {self.elders_list}")
+        except Exception as e:
+            # 3) If anything went wrong, we’ll see the error here:
+            print(f"[ERROR] get_elders_by_doctor({self.user_id}) raised exception: {e}")
+            self.elders_list = []
+
+        # 4) Now build menu_items from whatever self.elders_list contains
+        menu_items = [
+            {
+                "text": elder["username"],
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x=elder: self.select_elder_for_doctor_view(x)
+            }
+            for elder in self.elders_list
+        ]
+
+        if hasattr(self, "doctor_elder_menu"):
+            self.doctor_elder_menu.dismiss()
+
+        # 5) Ensure that doctor_elder_dropdown is a valid ID in this screen:
+        self.doctor_elder_menu = MDDropdownMenu(
+            caller=self.ids.doctor_elder_dropdown,
+            items=menu_items,
+            width_mult=4
+        )
+        self.doctor_elder_menu.open()
+
+    def view_medications_screen(self):
+        """
+        Called when an Elder taps “Medicine” on their dashboard GridCard.
+        This reuses the caregiver’s logic but passes the Elder’s own user_id.
+        """
+        elder_id = self.user_id
+        medications = get_medications_for_elder(elder_id)
+        print(f"[DEBUG] view_medications_screen() called for elder_id={elder_id}, meds={medications!r}")
+
+        container = self.ids.medications_list
+        container.clear_widgets()
+
+        if not medications:
+            # 1) Add the “no meds” label
+            container.add_widget(
+                MDLabel(
+                    text="There is no registered medication.",
+                    halign="center",
+                    size_hint_y=None,
+                    height=dp(50)
+                )
+            )
+            # 2) Now switch to the “view_medications_care” screen and return
+            self.ids.health_manager.current = "view_medications_care"
+            return
+
+        # 3) If there *are* medications, add them all…
+        for med in medications:
+            item = MDLabel(
+                text=(
+                    f"[b]{med['denumire_comerciala']}[/b] – {med['forma_farmaceutica']} "
+                    f"({med['concentratie']})\n"
+                    f"Frecvență: {med['frecventa']}\n"
+                    f"Observații: {med.get('observatii', '')}"
+                ),
+                markup=True,
+                size_hint_y=None,
+                height=dp(100),
+                padding=(dp(10), dp(10))
+            )
+            container.add_widget(item)
+
+        # 4) Finally, switch to the “view_medications_care” screen
+        self.ids.health_manager.current = "view_medications_care"
+
+
+    def select_elder_med(self, elder):
+        self.ids.med_elder.text = elder["username"]
+        self.selected_elder_for_med = elder
+        self.med_elder_menu.dismiss()
+
+    def submit_medication(self):
+        try:
+            elder = self.selected_elder_for_med
+        except AttributeError:
+            self.show_popup("Selectează un pacient.")
+            return
+
+        if not self.selected_medication_from_list:
+            self.show_popup("Selectează un medicament.")
+            return
+
+        denumire = self.selected_medication_from_list.get("Denumire comerciala", "")
+        forma = self.selected_medication_from_list.get("Forma farmaceutica", "")
+        conc = self.selected_medication_from_list.get("Concentratie", "")
+        frequency = self.ids.med_frequency.text.strip()
+
+        success = add_elder_medication(
+            elder_id=elder["id"],
+            doctor_id=self.user_id,
+            denumire_comerciala=denumire,
+            forma_farmaceutica=forma,
+            concentratie=conc,
+            observatii=self.ids.med_notes.text,
+            frecventa=frequency
+        )
+
+        if success:
+            self.show_popup("Medicament adăugat cu succes!")
+            self.clear_med_fields()
+            self.selected_medication_from_list = None
+
+            if self.user_role == "elder":
+                self.view_medications_screen()
+                print("Elder is viewing meds – refreshing list")
+
+        else:
+            self.show_popup("Eroare la salvarea medicamentului.")
+
+
+    def clear_med_fields(self):
+        self.ids.med_elder.text = ""
+        self.ids.med_name.text = ""
+        self.ids.med_forma.text = ""
+        self.ids.med_conc.text = ""
+        self.ids.med_notes.text = ""
+
+    def delete_medication_dialog(self, med_id):
+        dialog = MDDialog(
+            title="Confirmare",
+            text="Ești sigur că vrei să ștergi acest medicament?",
+            buttons=[
+                MDFlatButton(text="Anulează", on_release=lambda x: dialog.dismiss()),
+                MDFlatButton(text="Șterge", on_release=lambda x: self.confirm_delete_medication(dialog, med_id)),
+            ],
+        )
+        dialog.open()
+
+    def confirm_delete_medication(self, dialog, med_id):
+        dialog.dismiss()
+        if delete_elder_medication(med_id):
+            toast("Medicament șters.")
+
+            # Reîncarcă lista de medicamente pentru elderul selectat
+            if self.user_role == "doctor":
+                # dacă e doctor, reîncarcă pentru elderul selectat anterior
+                try:
+                    elder_id = self.selected_elder_for_med["id"]
+                    self.view_medications_doctor(elder_id)
+                except AttributeError:
+                    pass
+            elif self.user_role == "elder":
+                self.view_medications_screen()
+
+
+    def select_elder_for_doctor_view(self, elder):
+        print(f"[DEBUG] select_elder_for_doctor_view() called with elder: {elder}")
+        self.doctor_elder_menu.dismiss()
+        self.view_medications_doctor(elder["id"])
+        Clock.schedule_once(lambda dt: self.view_medications_doctor(elder["id"]), 0.01)
+
+
+    def open_view_medications_doctor_screen(self):
+        self.ids.health_manager.current = "view_medications_doctor"
+        self.open_elder_menu_for_doctor_view()  # Funcție nouă descrisă mai jos
+
+    def open_elder_menu_med(self):
+        """
+        Populate and open a dropdown of this doctor’s elders when the
+        “Selectează pacientul” field is focused in Add Medication.
+        """
+        # 1) Fetch the list of elders for the current doctor (self.user_id)
+        self.elders_list = get_elders_by_doctor(self.user_id)
+
+        # 2) Build MDDropdownMenu items for each elder
+        menu_items = [
+            {
+                "text": elder["username"],
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x=elder: self.select_elder_med(x)
+            }
+            for elder in self.elders_list
+        ]
+
+        # 3) If a previous menu exists, dismiss it to refresh
+        if hasattr(self, "med_elder_menu"):
+            self.med_elder_menu.dismiss()
+
+        # 4) Create and open a new dropdown, anchored to the MDTextField id=med_elder
+        self.med_elder_menu = MDDropdownMenu(
+            caller=self.ids.med_elder,
+            items=menu_items,
+            width_mult=4
+        )
+        self.med_elder_menu.open()
+    
+    def open_doctor_controls_screen(self):
+        self.ids.health_manager.current = "view_controls_doctor"
+        # Immediately open the elder‐selection dropdown:
+        self.open_elder_menu_for_controls()
+
+    def open_elder_menu_for_controls(self):
+        # This is nearly identical to open_elder_menu_for_doctor_view,
+        # but we’ll call select_elder_for_controls instead of select_elder_for_doctor_view.
+        self.elders_list = get_elders_by_doctor(self.user_id)
+        menu_items = [
+            {
+                "text": elder["username"],
+                "viewclass": "OneLineListItem",
+                "on_release": lambda x=elder: self.select_elder_for_controls(x)
+            }
+            for elder in self.elders_list
+        ]
+        if hasattr(self, "doctor_controls_menu"):
+            self.doctor_controls_menu.dismiss()
+
+        self.doctor_controls_menu = MDDropdownMenu(
+            caller=self.ids.doctor_controls_elder_dropdown,
+            items=menu_items,
+            width_mult=4
+        )
+        self.doctor_controls_menu.open()
+
+    def select_elder_for_controls(self, elder):
+        # 1) Dismiss the drop-down
+        self.doctor_controls_menu.dismiss()
+
+        # 2) Store this elder so future operations know whom we’re working on:
+        self.selected_elder_for_control = elder
+
+        # 3) Copy the username into the text field so it stays visible:
+        self.ids.doctor_controls_elder_dropdown.text = elder["username"]
+
+        # 4) Now load and show that elder’s controls:
+        self.view_controls_for_doctor(elder["id"])
+
+
+    def view_controls_for_doctor(self, doctor_id=None):
+        """
+        doctor_id is the logged‐in doctor’s ID (or you can store self.user_id directly).
+        We will fetch all controls for the currently selected elder, then add
+        one DoctorControlItem per record.
+        """
+        # 1) If you need to pass in an elder_id, decide how this is selected—
+        #    for example, you might have set self.selected_elder_for_control earlier.
+        elder_id = self.selected_elder_for_control["id"]
+
+        # 2) Query your “controls” table. Suppose you have a helper like:
+        controls = get_controls_for_elder(elder_id)
+        #    This should return a list of dicts, each dict having keys:
+        #    "id", "name", "goal", "details", "scheduled_at".
+
+        # 3) Clear out whatever “controls_list_doctor” container you have in KV:
+        container = self.ids.controls_list_doctor
+        container.clear_widgets()
+
+        if not controls:
+            container.add_widget(
+                MDLabel(
+                    text="No scheduled controls.",
+                    halign="center",
+                    size_hint_y=None,
+                    height=dp(50),
+                )
+            )
+        else:
+            for ctrl in controls:
+                sched_str = str(ctrl["scheduled_at"])    # force it to a plain string
+                item = Factory.DoctorControlItem(
+                    control_id   = ctrl["id"],
+                    name         = ctrl["name"],
+                    goal         = ctrl["goal"],
+                    details      = ctrl["details"],
+                    scheduled_at = sched_str,
+                )
+                container.add_widget(item)
+
+        # 5) Finally, switch the ScreenManager to your doctor‐controls screen:
+        self.ids.health_manager.current = "view_controls_doctor"
+
+    
+    def delete_control_dialog(self, control_id):
+        dialog = MDDialog(
+            title="Confirmare Ștergere",
+            text="Ești sigur că vrei să ștergi acest control medical?",
+            buttons=[
+                MDFlatButton(text="Anulează", on_release=lambda x: dialog.dismiss()),
+                MDFlatButton(
+                    text="Șterge",
+                    on_release=lambda x: self.confirm_delete_control(dialog, control_id),
+                ),
+            ],
+        )
+        dialog.open()
+    
+    def confirm_delete_control(self, dialog, control_id):
+        dialog.dismiss()
+        if delete_medical_control(control_id):
+            toast("Control șters.")
+            # Refresh the list for whichever elder is currently shown:
+            # We assume “last_elder_for_controls” was stored on self when view_controls_for_doctor was called.
+            try:
+                self.view_controls_for_doctor(self.last_elder_for_controls)
+            except Exception:
+                pass
+    
+    def submit_control(self, elder_id, doctor_id, name, goal, details, datetime_str):
+        """
+        Called by the “Save Control” button. `datetime_str` should be "YYYY-MM-DD HH:MM".
+        """
+        scheduled_at = f"{datetime_str}:00"
+        success = add_medical_control(elder_id, doctor_id, name, goal, details, scheduled_at)
+        if success:
+            toast("Control adăugat cu succes!")
+            self.last_elder_for_controls = elder_id
+            self.view_controls_for_doctor(elder_id)
+        else:
+            self.show_popup("Eroare la adăugarea controlului.")
+
+    
+    def view_controls_for_elder(self):
+        """
+        Called when an Elder taps its own “Medical Controls” GridCard.
+        Simply fetch that elder’s user_id as elder_id, then list controls read-only.
+        """
+        elder_id = self.user_id  # because for elder, user_id == their own elder_id
+        print(f"[DEBUG] view_controls_for_elder() called for elder_id={elder_id}")
+        self.ids.health_manager.current = "view_controls_elder"
+        container = self.ids.elder_controls_list
+        container.clear_widgets()
+
+        controls = get_controls_for_elder(elder_id)
+        if not controls:
+            container.add_widget(
+                MDLabel(
+                    text="Nu există controale medicale înregistrate.",
+                    halign="center",
+                    size_hint_y=None,
+                    height=dp(50),
+                )
+            )
+            return
+
+        for ctrl in controls:
+            sched_str = str(ctrl["scheduled_at"])   # convert to a Python string
+            item = Factory.ElderControlItem(
+                name=ctrl["name"],
+                goal=ctrl["goal"],
+                details=ctrl["details"],
+                scheduled_at=sched_str,
+            )
+            container.add_widget(item)
+
+    def view_controls_for_caregiver(self):
+        """
+        Called when a Caregiver taps its “Medical Controls” GridCard.
+        We find that caregiver’s assigned elder_id, then show that elder’s controls
+        in the same 'view_controls_elder' screen that an Elder would see.
+        """
+        # 1) Look up which elder is assigned to this caregiver
+        elder_id = get_elder_id_for_caregiver(self.user_id)
+        if elder_id is None:
+            self.show_popup("Acest îngrijitor nu are asociat niciun pacient.")
+            return
+
+        print(f"[DEBUG] view_controls_for_caregiver() called for elder_id={elder_id}")
+
+        # 2) Switch to the existing 'view_controls_elder' screen
+        self.ids.health_manager.current = "view_controls_elder"
+
+        # 3) Fetch the ScrollView container inside that screen
+        container = self.ids.elder_controls_list
+        container.clear_widgets()
+
+        # 4) Query the database for this elder’s controls
+        controls = get_controls_for_elder(elder_id)
+
+        if not controls:
+            # 5) If none, show a “no controls” label
+            container.add_widget(
+                MDLabel(
+                    text="Nu există controale medicale înregistrate.",
+                    halign="center",
+                    size_hint_y=None,
+                    height=dp(50),
+                )
+            )
+            return
+
+        # 6) Otherwise, create one ElderControlItem per control
+        for ctrl in controls:
+            # force scheduled_at into a plain string (e.g. “YYYY-MM-DD HH:MM:SS”)
+            sched_str = str(ctrl["scheduled_at"])
+            item = Factory.ElderControlItem(
+                name=ctrl["name"],
+                goal=ctrl["goal"],
+                details=ctrl["details"],
+                scheduled_at=sched_str,
+            )
+            container.add_widget(item)
+
 
 class MainApp(MDApp):
 

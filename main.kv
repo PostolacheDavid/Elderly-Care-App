@@ -402,7 +402,12 @@ ScreenManager:
                                                     spacing:'15dp'
                                                     GridCard:
                                                         source:"assets/icons/pill.png"
-                                                        text:"Pacients Medicine"
+                                                        text:"Add Pacients Medicine"
+                                                        on_release: root.add_medication_screen()
+                                                    GridCard:
+                                                        source:"assets/icons/pill.png"
+                                                        text:"See Pacients Medicine"
+                                                        on_release: root.open_view_medications_doctor_screen()
                                                     GridCard:
                                                         source:"assets/icons/pacients.png"
                                                         text:"Add Pacients"
@@ -411,6 +416,88 @@ ScreenManager:
                                                         source:"assets/icons/caregiver.png"
                                                         text:"Add Pacients"
                                                         on_release: root.create_caregiver_screen()
+                                                    GridCard:
+                                                        source:"assets/icons/nurse.png"
+                                                        text:"Medical Controls"
+                                                        on_release: root.open_doctor_controls_screen()
+
+                                    
+                                    
+                                    Screen:
+                                        name: "view_controls_doctor"
+                                        MDBoxLayout:
+                                            orientation: "vertical"
+                                            padding: dp(10)
+                                            spacing: dp(10)
+
+                                            # (1) elder drop-down
+                                            MDTextField:
+                                                id: doctor_controls_elder_dropdown
+                                                hint_text: "Selectează pacientul"
+                                                readonly: True
+                                                size_hint_y: None
+                                                height: dp(56)
+                                                on_focus:
+                                                    if self.focus: root.open_elder_menu_for_controls()
+
+                                            # (2) input fields for new control
+                                            MDTextField:
+                                                id: ctrl_name
+                                                hint_text: "Control Name"
+                                                mode: "rectangle"
+                                                size_hint_y: None
+                                                height: dp(48)
+                                            MDTextField:
+                                                id: ctrl_goal
+                                                hint_text: "Goal"
+                                                mode: "rectangle"
+                                                size_hint_y: None
+                                                height: dp(48)
+                                            MDTextField:
+                                                id: ctrl_details
+                                                hint_text: "Details"
+                                                mode: "rectangle"
+                                                multiline: True
+                                                size_hint_y: None
+                                                height: dp(80)
+                                            MDTextField:
+                                                id: ctrl_datetime
+                                                hint_text: "YYYY-MM-DD HH:MM"
+                                                mode: "rectangle"
+                                                size_hint_y: None
+                                                height: dp(48)
+
+                                            # (3) **This ScrollView + MDBoxLayout must** have id controls_list_doctor
+                                            ScrollView:
+                                                size_hint_y: 1
+                                                MDBoxLayout:
+                                                    id: controls_list_doctor
+                                                    orientation: "vertical"
+                                                    size_hint_y: None
+                                                    height: self.minimum_height
+                                                    spacing: dp(10)
+
+                                            # (4) Save + Back buttons
+                                            MDRaisedButton:
+                                                text: "Save Control"
+                                                size_hint_y: None
+                                                height: dp(48)
+                                                on_release:
+                                                    app.root.get_screen("main").submit_control(
+                                                    root.selected_elder_for_control["id"],
+                                                    root.user_id,
+                                                    ctrl_name.text.strip(),
+                                                    ctrl_goal.text.strip(),
+                                                    ctrl_details.text.strip(),
+                                                    ctrl_datetime.text.strip()
+                                                    )
+
+                                            MDRaisedButton:
+                                                text: "Back"
+                                                size_hint_y: None
+                                                height: dp(48)
+                                                on_release: root.update_ui()
+
                                     Screen:
                                         name: "create_elder"
 
@@ -455,6 +542,10 @@ ScreenManager:
                                                     text: "Create Elder"
                                                     pos_hint: {"center_x": 0.5}
                                                     on_release: root.submit_elder()
+                                                MDRaisedButton:
+                                                    text: "Back"
+                                                    pos_hint: {"center_x": 0.5}
+                                                    on_release: root.update_ui()
 
                                     Screen:
                                         name: "create_caregiver"
@@ -511,6 +602,119 @@ ScreenManager:
                                                     text: "Create Caregiver"
                                                     pos_hint: {"center_x": 0.5}
                                                     on_release: root.submit_caregiver()
+                                                MDRaisedButton:
+                                                    text: "Back"
+                                                    pos_hint: {"center_x": 0.5}
+                                                    on_release: root.update_ui()
+
+                                    MDScreen:
+                                        name: "view_medications"
+                                        # remove the old on_pre_enter line; we'll call view_medications_screen() manually
+
+                                        MDBoxLayout:
+                                            orientation: "vertical"
+
+                                            MDTopAppBar:
+                                                title: "My Medications"
+                                                left_action_items: [["arrow-left", lambda x: root.update_ui()]]
+
+                                            ScrollView:
+                                                MDBoxLayout:
+                                                    id: medications_list
+                                                    orientation: "vertical"
+                                                    size_hint_y: None
+                                                    height: self.minimum_height
+                                                    padding: dp(10)
+                                                    spacing: dp(10)
+
+                                            MDRaisedButton:
+                                                text: "Back"
+                                                pos_hint: {"center_x": 0.5}
+                                                on_release: root.update_ui()
+
+
+
+                                    MDScreen:
+                                        name: "add_medication"
+
+                                        MDBoxLayout:
+                                            orientation: "vertical"
+                                            padding: dp(10)
+                                            spacing: dp(10)
+
+                                            #MDTopAppBar:  # înlocuiește MDToolbar cu MDTopAppBar (recomandat)
+                                                #title: "Adaugă Medicament"
+                                                #left_action_items: [["arrow-left", lambda x: setattr(app.root.get_screen("main").ids.health_manager, "current", "doctor_health")]]
+
+                                            MDTextField:
+                                                id: med_name
+                                                hint_text: "Alege medicament"
+                                                readonly: True
+                                                on_focus: if self.focus: root.open_medication_dialog()
+
+                                            MDTextField:
+                                                id: med_forma
+                                                hint_text: "Formă farmaceutică"
+                                                readonly: True
+
+                                            MDTextField:
+                                                id: med_conc
+                                                hint_text: "Concentrație"
+                                                readonly: True
+
+                                            MDTextField:
+                                                id: med_frequency
+                                                hint_text: "Frecvență administrare (ex: 1 dată/zi)"
+                                                mode: "rectangle"
+                                            
+                                            MDTextField:
+                                                id: med_elder
+                                                hint_text: "Selectează pacientul"
+                                                mode: "rectangle"
+                                                readonly: True
+                                                on_focus: if self.focus: root.open_elder_menu_med()
+
+                                            MDTextField:
+                                                id: med_notes
+                                                hint_text: "Observații"
+                                                mode: "rectangle"
+                                                multiline: True
+
+                                            MDRaisedButton:
+                                                text: "Adaugă"
+                                                on_release: root.submit_medication()
+
+                                    Screen:
+                                        name: "view_medications_doctor"
+
+                                        MDBoxLayout:
+                                            orientation: "vertical"
+                                            padding: dp(10)
+                                            spacing: dp(10)
+
+                                            MDTextField:
+                                                id: doctor_elder_dropdown
+                                                hint_text: "Selectează pacientul"
+                                                readonly: True
+                                                size_hint_y: None         # ← disable automatic height
+                                                height: dp(56)            # ← fix it at 56 dp tall
+                                                on_focus: if self.focus: root.open_elder_menu_for_doctor_view()
+
+                                            ScrollView:
+                                                size_hint_y: 1            # ← take all remaining vertical space
+                                                MDBoxLayout:
+                                                    id: doctor_meds_list
+                                                    orientation: "vertical"
+                                                    size_hint_y: None
+                                                    height: self.minimum_height
+                                                    spacing: dp(10)
+
+                                            MDRaisedButton:
+                                                text: "Înapoi"
+                                                size_hint_y: None         # (optional) give this a fixed height too
+                                                height: dp(48)
+                                                on_release: root.update_ui()
+
 
 
                                     Screen:
@@ -534,21 +738,51 @@ ScreenManager:
                                                     GridCard:
                                                         source:"assets/icons/pill.png"
                                                         text:"Medicine"
+                                                        on_release: root.view_medications_screen()
                                                     GridCard:
                                                         source:"assets/icons/nurse.png"
                                                         text:"Appointments"
+                                                        on_release: root.view_controls_for_elder()
                                                     GridCard:
                                                         source:"assets/icons/medical_data.png"
                                                         text:"Medical Data"
                                                     GridCard:
                                                         source:"assets/icons/fitness.png"
                                                         text:"Fitness"
-                                                    GridCard:
-                                                        source:"assets/icons/notification.png"
-                                                        text:"Notifications"
-                                                    GridCard:
-                                                        source:"assets/icons/chat.png"
-                                                        text:"Chat"
+                                                    #GridCard:
+                                                        #source:"assets/icons/notification.png"
+                                                        #text:"Notifications"
+                                                    #GridCard:
+                                                        #source:"assets/icons/chat.png"
+                                                        #text:"Chat"
+                                    
+                                    MDScreen:
+                                        name: "view_controls_elder"
+                                        MDBoxLayout:
+                                            orientation: "vertical"
+                                            padding: dp(10)
+                                            spacing: dp(10)
+
+                                            MDLabel:
+                                                text: "Controale Medicale"
+                                                font_style: "H6"
+                                                size_hint_y: None
+                                                height: dp(32)
+                                                halign: "center"
+
+                                            ScrollView:
+                                                MDBoxLayout:
+                                                    id: elder_controls_list
+                                                    orientation: "vertical"
+                                                    size_hint_y: None
+                                                    height: self.minimum_height
+                                                    spacing: dp(10)
+
+                                            MDRaisedButton:
+                                                text: "Înapoi"
+                                                size_hint_y: None
+                                                height: dp(48)
+                                                on_release: root.update_ui()
 
                                     Screen:
                                         name: "caregiver_health"
@@ -568,6 +802,34 @@ ScreenManager:
                                                     size_hint_y: None
                                                     height: self.minimum_height 
                                                     spacing:'15dp'
+                                                    GridCard:
+                                                        source:"assets/icons/pill.png"
+                                                        text:"Medicine"
+                                                        on_release: root.load_elder_medications_for_caregiver()
+                                                    GridCard:
+                                                        source:"assets/icons/nurse.png"
+                                                        text:"Medical controls"
+                                                        on_release: root.view_controls_for_caregiver()
+
+                                    MDScreen:
+                                        name: "view_medications_care"
+
+                                        MDBoxLayout:
+                                            orientation: "vertical"
+
+                                            ScrollView:
+                                                MDBoxLayout:
+                                                    id: medications_list
+                                                    orientation: "vertical"
+                                                    size_hint_y: None
+                                                    height: self.minimum_height
+                                                    padding: dp(10)
+                                                    spacing: dp(10)
+                                                
+                                            MDRaisedButton:
+                                                text: "Back"
+                                                pos_hint: {"center_x": 0.5}
+                                                on_release: root.update_ui()
                                                     
                                     Screen:
                                         name: "admin"
@@ -603,20 +865,20 @@ ScreenManager:
                                                 size_hint_y: None
                                                 height: self.minimum_height
 
-                        MDBottomNavigationItem:
-                            name:"Emergency Screen"
-                            text:"Emergency"
-                            icon:"assets/icons/emergency.png"
-                            MDScreen: #Ecran pentru atunci cand apesi butonul
-                                MDBoxLayout:
-                                    pos_hint:{'center_x':0.5, 'center_y':0.5}
-                                    orientation:'vertical'
-                                    size_hint_y: 0.4
-                                    size_hint_x: 0.4
-                                    spacing: "40dp"
-                                    MDLabel:
-                                        text: "Welcome to the Emergency Screen!"
-                                        halign: "center"
+                        #MDBottomNavigationItem:
+                            #name:"Emergency Screen"
+                            #text:"Emergency"
+                            #icon:"assets/icons/emergency.png"
+                            #MDScreen: #Ecran pentru atunci cand apesi butonul
+                                #MDBoxLayout:
+                                    #pos_hint:{'center_x':0.5, 'center_y':0.5}
+                                    #orientation:'vertical'
+                                    #size_hint_y: 0.4
+                                    #size_hint_x: 0.4
+                                    #spacing: "40dp"
+                                    #MDLabel:
+                                        #text: "Welcome to the Emergency Screen!"
+                                        #halign: "center"
         
         MDNavigationDrawer:
             id: nav_drawer
@@ -656,7 +918,37 @@ ScreenManager:
                     on_release:
                         app.show_logout_dialog()
 
+<DoctorMedItem>:
+    size_hint_y: None
+    height: dp(100)            # or whichever height makes sense
+    orientation: "vertical"
+    padding: dp(10)
+    spacing: dp(6)
 
+    MDLabel:
+        text: "[b]" + root.denumire + "[/b]  -  " + root.forma + " (" + root.concentratie + ")"
+        markup: True
+        size_hint_y: None
+        height: self.texture_size[1]
+
+    MDLabel:
+        text: "Frecvență: " + root.frecventa
+        size_hint_y: None
+        height: self.texture_size[1]
+
+    MDLabel:
+        text: "Observații: " + root.observatii
+        size_hint_y: None
+        height: self.texture_size[1]
+    
+    MDRaisedButton:
+        text: "Șterge"
+        size_hint: (None, None)
+        size: dp(80), dp(36)
+        pos_hint: {"right": 1}
+        on_release:
+            # Call MainScreen.delete_medication_dialog, passing the med_id of this item
+            app.root.get_screen("main").delete_medication_dialog(root.med_id)
 
 <GridCard@MDCard>:
     ripple_behavior:True
@@ -679,3 +971,168 @@ ScreenManager:
             text:root.text
             adaptive_height:True
             halign:'center'
+
+<MedicationSearchDialog@MDBoxLayout>:
+    orientation: "vertical"
+    size_hint_y: None
+    height: "500dp"
+    spacing: "10dp"
+    padding: "10dp"
+
+    MDTextField:
+        id: search_field
+        size_hint_y: None
+        height: dp(56)
+        hint_text: "Caută medicament"
+        on_text: root.filter_medications(self.text)
+
+    RecycleView:
+        id: med_rv
+        viewclass: "OneLineListItem"
+        scroll_type: ['bars', 'content']
+        bar_width: "10dp"
+        padding: [0, dp(56), 0, 0]
+        RecycleBoxLayout:
+            orientation: "vertical"
+            default_size: None, dp(56)
+            default_size_hint: 1, None
+            size_hint_y: None
+            height: self.minimum_height
+            spacing: dp(2)
+
+<DoctorControlForm@MDBoxLayout>:
+    orientation: "vertical"
+    size_hint_y: None
+    height: self.minimum_height
+    spacing: dp(8)
+    padding: dp(10)
+
+    MDLabel:
+        text: "[b]Adaugă Control Medical[/b]"
+        markup: True
+        size_hint_y: None
+        height: dp(32)
+
+    MDTextField:
+        id: ctrl_name
+        hint_text: "Nume control"
+        mode: "rectangle"
+        size_hint_y: None
+        height: dp(48)
+
+    MDTextField:
+        id: ctrl_goal
+        hint_text: "Scop"
+        mode: "rectangle"
+        size_hint_y: None
+        height: dp(48)
+
+    MDTextField:
+        id: ctrl_details
+        hint_text: "Detalii"
+        mode: "rectangle"
+        multiline: True
+        size_hint_y: None
+        height: dp(80)
+
+    # We use two separate MDTextFields for date and time inputs; you can
+    # replace them with MDDatePicker / MDTimePicker if you want a popup.
+    MDTextField:
+        id: ctrl_date
+        hint_text: "Data (YYYY-MM-DD)"
+        mode: "rectangle"
+        size_hint_y: None
+        height: dp(48)
+
+    MDTextField:
+        id: ctrl_time
+        hint_text: "Ora (HH:MM)"
+        mode: "rectangle"
+        size_hint_y: None
+        height: dp(48)
+
+    MDRaisedButton:
+        text: "Adaugă Control"
+        size_hint_y: None
+        height: dp(48)
+        pos_hint: {"center_x": 0.5}
+        on_release:
+            app.root.get_screen("main").submit_control(
+            root.elder_id,
+            root.doctor_id,
+            ctrl_name.text.strip(),
+            ctrl_goal.text.strip(),
+            ctrl_details.text.strip(),
+            ctrl_date.text.strip(),
+            ctrl_time.text.strip()
+            )
+
+<DoctorControlItem>:
+    size_hint_y: None
+    height: dp(120)
+    orientation: "vertical"
+    padding: dp(10)
+    spacing: dp(6)
+
+    MDLabel:
+        text: "[b]" + root.name + "[/b]"
+        markup: True
+        size_hint_y: None
+        height: self.texture_size[1]
+
+    MDLabel:
+        text: "Goal: " + root.goal
+        size_hint_y: None
+        height: self.texture_size[1]
+
+    MDLabel:
+        text: "Details: " + root.details
+        size_hint_y: None
+        height: self.texture_size[1]
+
+    MDLabel:
+        text: "When: " + root.scheduled_at
+        size_hint_y: None
+        height: self.texture_size[1]
+
+    MDRaisedButton:
+        text: "Delete"
+        size_hint: None, None
+        size: dp(80), dp(36)
+        pos_hint: {"right": 1}
+        on_release:
+            app.root.get_screen("main").delete_control(root.control_id)
+
+<ElderControlItem@MDBoxLayout>:
+    name: ""
+    goal: ""
+    details: ""
+    scheduled_at: ""    # “YYYY-MM-DD HH:MM:SS”
+
+    orientation: "vertical"
+    size_hint_y: None
+    height: dp(120)
+    padding: dp(8)
+    spacing: dp(4)
+    md_bg_color: 0.95, 1, 0.95, 1
+
+    MDLabel:
+        text: "[b]" + root.name + "[/b]"
+        markup: True
+        size_hint_y: None
+        height: dp(24)
+
+    MDLabel:
+        text: "Scop: " + root.goal
+        size_hint_y: None
+        height: self.texture_size[1]
+
+    MDLabel:
+        text: "Detalii: " + root.details
+        size_hint_y: None
+        height: self.texture_size[1]
+
+    MDLabel:
+        text: "Programat la: " + root.scheduled_at
+        size_hint_y: None
+        height: self.texture_size[1]

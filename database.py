@@ -1,5 +1,6 @@
 import mysql.connector
 import bcrypt
+from datetime import datetime
 
 def hash_password(password):
     salt = bcrypt.gensalt()
@@ -177,5 +178,165 @@ def get_elders_by_doctor(doctor_id):
     except mysql.connector.Error as e:
         print(f"MySQL Error: {e}")
         return []
+    
+def add_elder_medication(elder_id, doctor_id, denumire_comerciala, forma_farmaceutica, concentratie, observatii, frecventa):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO elder_medications (elder_id, doctor_id, denumire_comerciala, forma_farmaceutica, concentratie, observatii, frecventa)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+        """, (elder_id, doctor_id, denumire_comerciala, forma_farmaceutica, concentratie, observatii, frecventa))
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return True
+
+    except mysql.connector.Error as e:
+        print(f"MySQL Error (add_elder_medication): {e}")
+        return False
+
+def get_medications_for_elder(elder_id):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT denumire_comerciala, forma_farmaceutica, concentratie, observatii, frecventa
+            FROM elder_medications
+            WHERE elder_id = %s
+        """, (elder_id,))
+
+        results = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return results
+
+    except mysql.connector.Error as e:
+        print(f"MySQL Error (get_medications_for_elder): {e}")
+        return []
+
+def get_elder_id_for_caregiver(user_id):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor(dictionary=True)
+
+        query = "SELECT elder_id FROM users WHERE id = %s AND role = 'caregiver'"
+        cursor.execute(query, (user_id,))
+        result = cursor.fetchone()
+
+        conn.close()
+        return result["elder_id"] if result else None
+    except mysql.connector.Error as e:
+        print(f"MySQL Error (get_elder_id_for_caregiver): {e}")
+        return None
+
+def delete_elder_medication(medication_id):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+
+        query = "DELETE FROM elder_medications WHERE id = %s"
+        cursor.execute(query, (medication_id,))
+        conn.commit()
+        conn.close()
+        return True
+    except mysql.connector.Error as e:
+        print(f"MySQL Error (delete_elder_medication): {e}")
+        return False
+
+def get_medications_with_id_for_elder(elder_id):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor(dictionary=True)
+
+        cursor.execute("""
+            SELECT id, denumire_comerciala, forma_farmaceutica, concentratie, frecventa, observatii
+            FROM elder_medications
+            WHERE elder_id = %s
+        """, (elder_id,))
+
+        results = cursor.fetchall()
+        conn.close()
+        return results
+
+    except mysql.connector.Error as e:
+        print(f"MySQL Error (get_medications_with_id_for_elder): {e}")
+        return []
+
+def add_medical_control(elder_id, doctor_id, name, goal, details, scheduled_at):
+    """
+    Insert a row into medical_controls.
+      - elder_id, doctor_id: integers
+      - name, goal, details: strings
+      - scheduled_at: a Python datetime or string 'YYYY-MM-DD HH:MM:SS'
+    """
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+        # If scheduled_at is a datetime, convert to string:
+        if isinstance(scheduled_at, datetime):
+            scheduled_str = scheduled_at.strftime("%Y-%m-%d %H:%M:%S")
+        else:
+            scheduled_str = scheduled_at
+
+        query = """
+            INSERT INTO medical_controls
+            (elder_id, doctor_id, name, goal, details, scheduled_at)
+            VALUES (%s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(query, (elder_id, doctor_id, name, goal, details, scheduled_str))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return True
+    except mysql.connector.Error as e:
+        print(f"MySQL Error (add_medical_control): {e}")
+        return False
+
+# ── Fetch all controls for a given elder ──
+def get_controls_for_elder(elder_id):
+    """
+    Return a list of dicts, each representing one control for the given elder_id:
+      [
+        { "id": 1, "doctor_id": 5, "name": "...", "goal": "...",
+          "details": "...", "scheduled_at": "2025-07-01 10:30:00" },
+        ...
+      ]
+    """
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT id, doctor_id, name, goal, details, scheduled_at
+            FROM medical_controls
+            WHERE elder_id = %s
+            ORDER BY scheduled_at ASC
+        """, (elder_id,))
+        results = cursor.fetchall()
+        cursor.close()
+        conn.close()
+        return results
+    except mysql.connector.Error as e:
+        print(f"MySQL Error (get_controls_for_elder): {e}")
+        return []
+
+# ── Delete a control by its ID ──
+def delete_medical_control(control_id):
+    """
+    Deletes the control with the given primary key.
+    """
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM medical_controls WHERE id = %s", (control_id,))
+        conn.commit()
+        conn.close()
+        return True
+    except mysql.connector.Error as e:
+        print(f"MySQL Error (delete_medical_control): {e}")
+        return False
 
 

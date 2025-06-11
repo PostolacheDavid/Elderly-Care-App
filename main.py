@@ -767,23 +767,26 @@ class MainScreen(Screen):
 
     def view_controls_for_doctor(self, doctor_id=None):
         """
-        doctor_id is the logged‐in doctor’s ID (or you can store self.user_id directly).
+        doctor_id is the logged-in doctor’s ID (or you can store self.user_id directly).
         We will fetch all controls for the currently selected elder, then add
         one DoctorControlItem per record.
         """
-        # 1) If you need to pass in an elder_id, decide how this is selected—
-        #    for example, you might have set self.selected_elder_for_control earlier.
+        # 0) Switch to the doctor-controls screen first so its ids exist
+        self.ids.health_manager.current = "view_controls_doctor"
+
+        # 1) Determine which elder to show controls for (set in select_elder_for_controls)
         elder_id = self.selected_elder_for_control["id"]
 
-        # 2) Query your “controls” table. Suppose you have a helper like:
+        # 2) Fetch from the database
         controls = get_controls_for_elder(elder_id)
-        #    This should return a list of dicts, each dict having keys:
-        #    "id", "name", "goal", "details", "scheduled_at".
+        print(f"[DEBUG] controls for elder_id={elder_id}: {controls!r}")
+        #    Each control dict should have: "id", "name", "goal", "details", "scheduled_at"
 
-        # 3) Clear out whatever “controls_list_doctor” container you have in KV:
+        # 3) Clear out the existing list
         container = self.ids.controls_list_doctor
         container.clear_widgets()
 
+        # 4) Populate or show “no controls” message
         if not controls:
             container.add_widget(
                 MDLabel(
@@ -795,18 +798,18 @@ class MainScreen(Screen):
             )
         else:
             for ctrl in controls:
-                sched_str = str(ctrl["scheduled_at"])    # force it to a plain string
+                sched_str = str(ctrl["scheduled_at"])  # ensure plain str
                 item = Factory.DoctorControlItem(
-                    control_id   = ctrl["id"],
-                    name         = ctrl["name"],
-                    goal         = ctrl["goal"],
-                    details      = ctrl["details"],
-                    scheduled_at = sched_str,
+                    control_id=ctrl["id"],
+                    name=ctrl["name"],
+                    goal=ctrl["goal"],
+                    details=ctrl["details"],
+                    scheduled_at=sched_str,
                 )
                 container.add_widget(item)
 
-        # 5) Finally, switch the ScreenManager to your doctor‐controls screen:
-        self.ids.health_manager.current = "view_controls_doctor"
+        # 5) (Optional) keep the screen on after populating—already set at top
+
 
     
     def delete_control_dialog(self, control_id):

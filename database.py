@@ -339,4 +339,62 @@ def delete_medical_control(control_id):
         print(f"MySQL Error (delete_medical_control): {e}")
         return False
 
+def add_elder_document(elder_id, doctor_id, filename, data):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+        cursor.execute("""
+            INSERT INTO elder_documents (elder_id, doctor_id, filename, file_data)
+            VALUES (%s, %s, %s, %s)
+        """, (elder_id, doctor_id, filename, data))
+        conn.commit()
+        conn.close()
+        return True
+    except mysql.connector.Error as e:
+        print(f"DB Error add_elder_document: {e}")
+        return False
 
+def get_documents_for_elder(elder_id):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT id, filename, uploaded_at
+            FROM elder_documents
+            WHERE elder_id = %s
+            ORDER BY uploaded_at DESC
+        """, (elder_id,))
+        docs = cursor.fetchall()
+        conn.close()
+        return docs
+    except mysql.connector.Error as e:
+        print(f"DB Error get_documents_for_elder: {e}")
+        return []
+
+def get_document_data(doc_id):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+        cursor.execute("""
+            SELECT filename, file_data
+            FROM elder_documents
+            WHERE id = %s
+        """, (doc_id,))
+        row = cursor.fetchone()
+        conn.close()
+        return row if row else None
+    except mysql.connector.Error as e:
+        print(f"DB Error get_document_data: {e}")
+        return None
+
+def delete_elder_document(doc_id):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM elder_documents WHERE id = %s", (doc_id,))
+        conn.commit()
+        conn.close()
+        return True
+    except mysql.connector.Error as e:
+        print(f"DB Error delete_elder_document: {e}")
+        return False

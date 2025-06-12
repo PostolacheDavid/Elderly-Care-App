@@ -5,7 +5,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
 from kivy.properties import StringProperty, NumericProperty, ObjectProperty
 from database import check_user
-from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor, add_elder_medication, get_medications_for_elder, get_elder_id_for_caregiver, delete_elder_medication, get_medications_with_id_for_elder, add_medical_control, get_controls_for_elder, delete_medical_control
+from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor, add_elder_medication, get_medications_for_elder, get_elder_id_for_caregiver, delete_elder_medication, get_medications_with_id_for_elder, add_medical_control, get_controls_for_elder, delete_medical_control, add_elder_document, get_documents_for_elder, get_document_data, delete_elder_document
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
@@ -931,6 +931,131 @@ class MainScreen(Screen):
                 scheduled_at=sched_str,
             )
             container.add_widget(item)
+    
+    def open_doctor_docs_screen(self):
+        self.ids.health_manager.current = "doctor_docs"
+        self.open_elder_menu_for_docs()
+
+    def open_elder_menu_for_docs(self):
+        self.elders_list = get_elders_by_doctor(self.user_id)
+        items = [{
+            "text": e["username"],
+            "viewclass": "OneLineListItem",
+            "on_release": lambda x=e: self.select_elder_for_docs(x)
+        } for e in self.elders_list]
+        if hasattr(self, "docs_elder_menu"): self.docs_elder_menu.dismiss()
+        self.docs_elder_menu = MDDropdownMenu(
+            caller=self.ids.doc_docs_elder_dropdown,
+            items=items, width_mult=4
+        )
+        self.docs_elder_menu.open()
+
+    def select_elder_for_docs(self, elder):
+        self.selected_elder_for_docs = elder
+        self.ids.doc_docs_elder_dropdown.text = elder["username"]
+        self.docs_elder_menu.dismiss()
+        self.view_documents_for_doctor(elder["id"])
+
+    def open_file_chooser_for_doc(self):
+        # Ask the user to pick a file
+        file_paths = filechooser.open_file(
+            title="Select a document to upload",
+            filters=[("All files", "*.*")],
+            multiple=False
+        )
+        if not file_paths:
+            return
+
+        path = file_paths[0]
+        try:
+            with open(path, "rb") as f:
+                data = f.read()
+        except Exception as e:
+            self.show_popup(f"Failed to read file:\n{e}")
+            return
+
+        fname = os.path.basename(path)
+        if add_elder_document(self.selected_elder_for_docs["id"], self.user_id, fname, data):
+            toast("Document uploaded successfully.")
+            # Refresh the list
+            self.view_documents_for_doctor(self.selected_elder_for_docs["id"])
+        else:
+            self.show_popup("Upload failed. Please try again.")
+
+    def view_documents_for_doctor(self, elder_id):
+        docs = get_documents_for_elder(elder_id)
+        container = self.ids.docs_list_doctor
+        container.clear_widgets()
+        if not docs:
+            container.add_widget(MDLabel(text="No documents.", halign="center",
+                                         size_hint_y=None, height=dp(40)))
+        else:
+            for d in docs:
+                btn = MDRaisedButton(
+                    text=d["filename"],
+                    size_hint_y=None, height=dp(40),
+                    on_release=lambda x, doc_id=d["id"]: self.download_and_open(doc_id)
+                )
+                # add delete below filename
+                del_btn = MDRaisedButton(
+                    text="Delete",
+                    size_hint=(None, None), size=(dp(80), dp(32)),
+                    pos_hint={"right": 1},
+                    on_release=lambda x, doc_id=d["id"]: self.delete_doc_dialog(doc_id)
+                )
+                row = MDBoxLayout(size_hint_y=None, height=dp(48), spacing=dp(4))
+                row.add_widget(btn)
+                row.add_widget(del_btn)
+                container.add_widget(row)
+
+    def delete_doc_dialog(self, doc_id):
+        d = MDDialog(
+            title="Delete?",
+            text="Remove this document?",
+            buttons=[
+                MDFlatButton(text="No", on_release=lambda x: d.dismiss()),
+                MDFlatButton(text="Yes",
+                    on_release=lambda x: self.confirm_delete_doc(d, doc_id))
+            ])
+        d.open()
+
+    def confirm_delete_doc(self, dialog, doc_id):
+        dialog.dismiss()
+        if delete_elder_document(doc_id):
+            toast("Deleted.")
+            self.view_documents_for_doctor(self.selected_elder_for_docs["id"])
+
+    def view_documents_screen(self):
+        # shared by elder & caregiver
+        if self.user_role == "caregiver":
+            eid = get_elder_id_for_caregiver(self.user_id)
+        else:
+            eid = self.user_id
+        docs = get_documents_for_elder(eid)
+        container = self.ids.docs_list_elder
+        container.clear_widgets()
+        if not docs:
+            container.add_widget(MDLabel(text="No documents.", halign="center",
+                                         size_hint_y=None, height=dp(40)))
+        else:
+            for d in docs:
+                container.add_widget(
+                    MDRaisedButton(
+                      text=d["filename"],
+                      size_hint_y=None, height=dp(40),
+                      on_release=lambda x, doc_id=d["id"]: self.download_and_open(doc_id)
+                    )
+                )
+        self.ids.health_manager.current = "view_docs"
+
+    def download_and_open(self, doc_id):
+        row = get_document_data(doc_id)
+        if not row: return
+        fname, data = row
+        # Write to temp file and open via default app
+        tmp = os.path.join(os.getenv("TEMP"), fname)
+        with open(tmp, "wb") as f: f.write(data)
+        os.startfile(tmp)
 
 
 class MainApp(MDApp):

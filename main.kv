@@ -420,8 +420,46 @@ ScreenManager:
                                                         source:"assets/icons/nurse.png"
                                                         text:"Medical Controls"
                                                         on_release: root.open_doctor_controls_screen()
+                                                    GridCard:
+                                                        source:"assets/icons/medical_data.png"
+                                                        text:"Medical Data"
+                                                        on_release: root.open_doctor_docs_screen()
 
-                                    
+                                    Screen:
+                                        name: "doctor_docs"
+                                        MDBoxLayout:
+                                            orientation: "vertical"
+                                            padding: dp(10) 
+                                            spacing: dp(10)
+
+                                            MDTextField:
+                                                id: doc_docs_elder_dropdown
+                                                hint_text: "Select Elder"
+                                                readonly: True
+                                                size_hint_y: None 
+                                                height: dp(56)
+                                                on_focus: if self.focus: root.open_elder_menu_for_docs()
+
+                                            ScrollView:
+                                                size_hint_y: 1
+                                                MDBoxLayout:
+                                                    id: docs_list_doctor
+                                                    orientation: "vertical"
+                                                    size_hint_y: None
+                                                    height: self.minimum_height
+                                                    spacing: dp(8)
+
+                                            MDRaisedButton:
+                                                text: "Upload File"
+                                                size_hint_y: None 
+                                                height: dp(48)
+                                                on_release: root.open_file_chooser_for_doc()
+
+                                            MDRaisedButton:
+                                                text: "Back"
+                                                size_hint_y: None 
+                                                height: dp(48)
+                                                on_release: root.update_ui()
                                     
                                     Screen:
                                         name: "view_controls_doctor"
@@ -773,6 +811,7 @@ ScreenManager:
                                                     GridCard:
                                                         source:"assets/icons/medical_data.png"
                                                         text:"Medical Data"
+                                                        on_release: root.view_documents_screen()
                                                     GridCard:
                                                         source:"assets/icons/fitness.png"
                                                         text:"Fitness"
@@ -782,6 +821,28 @@ ScreenManager:
                                                     #GridCard:
                                                         #source:"assets/icons/chat.png"
                                                         #text:"Chat"
+
+                                    Screen:
+                                        name: "view_docs"
+                                        MDBoxLayout:
+                                            orientation: "vertical"
+                                            padding: dp(10) 
+                                            spacing: dp(10)
+
+                                            ScrollView:
+                                                size_hint_y: 1
+                                                MDBoxLayout:
+                                                    id: docs_list_elder
+                                                    orientation: "vertical"
+                                                    size_hint_y: None
+                                                    height: self.minimum_height
+                                                    spacing: dp(8)
+
+                                            MDRaisedButton:
+                                                text: "Back"
+                                                size_hint_y: None
+                                                height: dp(48)
+                                                on_release: root.update_ui()
                                     
                                     MDScreen:
                                         name: "view_controls_elder"
@@ -837,6 +898,10 @@ ScreenManager:
                                                         source:"assets/icons/nurse.png"
                                                         text:"Medical controls"
                                                         on_release: root.view_controls_for_caregiver()
+                                                    GridCard:
+                                                        source:"assets/icons/medical_data.png"
+                                                        text:"Medical Data"
+                                                        on_release: root.view_documents_screen()
 
                                     MDScreen:
                                         name: "view_medications_care"

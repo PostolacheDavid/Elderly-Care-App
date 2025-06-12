@@ -398,3 +398,38 @@ def delete_elder_document(doc_id):
     except mysql.connector.Error as e:
         print(f"DB Error delete_elder_document: {e}")
         return False
+
+def add_exercise_for_elder(elder_id: int, title: str, description: str, video_url: str) -> bool:
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cur = conn.cursor()
+        cur.execute(
+            """
+            INSERT INTO exercises (elder_id, title, description, video_url)
+            VALUES (%s, %s, %s, %s)
+            """,
+            (elder_id, title, description, video_url),
+        )
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    except mysql.connector.Error as e:
+        print(f"MySQL Error (add_exercise_for_elder): {e}")
+        return False
+
+def get_exercises_for_elder(elder_id: int) -> list[dict]:
+    conn = mysql.connector.connect(**DB_CONFIG)
+    cur = conn.cursor(dictionary=True)
+    cur.execute(
+        "SELECT id, title, description, video_url "
+        "FROM exercises WHERE elder_id = %s",
+        (elder_id,),
+    )
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return [
+      {"id": r["id"], "title": r["title"], "description": r["description"], "video_url": r["video_url"]}
+      for r in rows
+    ]

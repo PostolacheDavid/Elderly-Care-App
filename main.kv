@@ -424,6 +424,46 @@ ScreenManager:
                                                         source:"assets/icons/medical_data.png"
                                                         text:"Medical Data"
                                                         on_release: root.open_doctor_docs_screen()
+                                                    GridCard:
+                                                        source:"assets/icons/fitness.png"
+                                                        text:"Fitness"
+                                                        on_release: root.open_doctor_exercises_screen()
+
+                                    Screen:
+                                        name: "doctor_exercises"
+                                        MDBoxLayout:
+                                            orientation: "vertical"
+                                            padding: dp(10) 
+                                            spacing: dp(10)
+
+                                            MDTextField:
+                                                id: ex_elder_dropdown
+                                                hint_text: "Select Elder"
+                                                readonly: True
+                                                size_hint_y: None
+                                                height: dp(56)
+                                                on_focus: if self.focus: root.open_elder_menu_for_exercises()
+
+                                            ScrollView:
+                                                size_hint_y: 1
+                                                MDBoxLayout:
+                                                    id: exercises_list_doctor
+                                                    orientation: "vertical"
+                                                    size_hint_y: None
+                                                    height: self.minimum_height
+                                                    spacing: dp(8)
+
+                                            MDRaisedButton:
+                                                text: "Add Exercise"
+                                                size_hint_y: None
+                                                height: dp(48)
+                                                on_release: root.open_add_exercise_dialog()
+
+                                            MDRaisedButton:
+                                                text: "Back"
+                                                size_hint_y: None
+                                                height: dp(48)
+                                                on_release: root.update_ui()
 
                                     Screen:
                                         name: "doctor_docs"
@@ -815,12 +855,35 @@ ScreenManager:
                                                     GridCard:
                                                         source:"assets/icons/fitness.png"
                                                         text:"Fitness"
+                                                        on_release: root.view_exercises_screen()
                                                     #GridCard:
                                                         #source:"assets/icons/notification.png"
                                                         #text:"Notifications"
                                                     #GridCard:
                                                         #source:"assets/icons/chat.png"
                                                         #text:"Chat"
+
+                                    Screen:
+                                        name: "view_exercises"
+                                        MDBoxLayout:
+                                            orientation: "vertical"
+                                            padding: dp(10)
+                                            spacing: dp(10)
+
+                                            ScrollView:
+                                                size_hint_y: 1
+                                                MDBoxLayout:
+                                                    id: exercises_list_elder
+                                                    orientation: "vertical"
+                                                    size_hint_y: None
+                                                    height: self.minimum_height
+                                                    spacing: dp(8)
+
+                                            MDRaisedButton:
+                                                text: "Back"
+                                                size_hint_y: None
+                                                height: dp(48)
+                                                on_release: root.update_ui()
 
                                     Screen:
                                         name: "view_docs"
@@ -902,6 +965,10 @@ ScreenManager:
                                                         source:"assets/icons/medical_data.png"
                                                         text:"Medical Data"
                                                         on_release: root.view_documents_screen()
+                                                    GridCard:
+                                                        source:"assets/icons/fitness.png"
+                                                        text:"Fitness"
+                                                        on_release: root.view_exercises_screen()
 
                                     MDScreen:
                                         name: "view_medications_care"
@@ -1193,7 +1260,7 @@ ScreenManager:
         size: dp(80), dp(36)
         pos_hint: {"right": 1}
         on_release:
-            app.root.get_screen("main").delete_control(root.control_id)
+            app.root.get_screen("main").delete_control_dialog(root.control_id)
 
 <ElderControlItem@MDBoxLayout>:
     name: ""
@@ -1228,3 +1295,25 @@ ScreenManager:
         text: "Programat la: " + root.scheduled_at
         size_hint_y: None
         height: self.texture_size[1]
+
+<ExerciseItem@MDBoxLayout>:
+    title: ""
+    description: ""
+    video_url: ""
+    orientation: "vertical"
+    padding: dp(10)
+    spacing: dp(6)
+
+    MDLabel:
+        text: "[b]" + root.title + "[/b]"
+        markup: True
+
+    MDLabel:
+        text: root.description
+        size_hint_y: None
+        height: self.texture_size[1]
+
+    MDLabel:
+        markup: True
+        text: "[ref=video]Vezi exercițiul[/ref]"
+        on_ref_press: app.open_url(root.video_url)

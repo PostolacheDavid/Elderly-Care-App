@@ -1,11 +1,12 @@
 from plyer import filechooser
+import webbrowser
 from kivymd.app import MDApp
 from kivymd.uix.screen import MDScreen
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
 from kivy.properties import StringProperty, NumericProperty, ObjectProperty
 from database import check_user
-from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor, add_elder_medication, get_medications_for_elder, get_elder_id_for_caregiver, delete_elder_medication, get_medications_with_id_for_elder, add_medical_control, get_controls_for_elder, delete_medical_control, add_elder_document, get_documents_for_elder, get_document_data, delete_elder_document
+from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor, add_elder_medication, get_medications_for_elder, get_elder_id_for_caregiver, delete_elder_medication, get_medications_with_id_for_elder, add_medical_control, get_controls_for_elder, delete_medical_control, add_elder_document, get_documents_for_elder, get_document_data, delete_elder_document, add_exercise_for_elder, get_exercises_for_elder
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
@@ -27,6 +28,9 @@ from kivymd.uix.list import OneLineListItem
 from kivy.factory import Factory
 from kivymd.toast import toast
 from kivy.clock import Clock
+from kivymd.uix.textfield import MDTextField
+from plyer import utils
+from kivymd.toast import toast
 
 class ElderControlItem(MDBoxLayout):
     # These must match the KV rule’s usage of root.name, root.goal, etc.
@@ -1057,6 +1061,136 @@ class MainScreen(Screen):
         with open(tmp, "wb") as f: f.write(data)
         os.startfile(tmp)
 
+    def open_doctor_exercises_screen(self):
+        self.ids.health_manager.current = "doctor_exercises"
+        self.load_exercises_for_doctor()
+
+    def open_elder_menu_for_exercises(self):
+        # identical to your docs/controls dropdown, but target ex_elder_dropdown
+        self.elders_list = get_elders_by_doctor(self.user_id)
+        items = [{
+            "text": e["username"], "viewclass": "OneLineListItem",
+            "on_release": lambda x=e: self.select_elder_for_exercises(x)
+        } for e in self.elders_list]
+        if hasattr(self, "ex_elder_menu"): self.ex_elder_menu.dismiss()
+        self.ex_elder_menu = MDDropdownMenu(
+            caller=self.ids.ex_elder_dropdown, items=items, width_mult=4
+        )
+        self.ex_elder_menu.open()
+
+    def select_elder_for_exercises(self, elder):
+        self.ex_elder_menu.dismiss()
+        self.selected_elder_for_ex = elder
+        self.ids.ex_elder_dropdown.text = elder["username"]
+        self.load_exercises_for_doctor()
+
+    def load_exercises_for_doctor(self):
+        elder_id = getattr(self, "selected_elder_for_ex", {}).get("id")
+        if not elder_id:
+            return
+
+        exs = get_exercises_for_elder(elder_id)
+        container = self.ids.exercises_list_doctor
+        container.clear_widgets()
+
+        if not exs:
+            container.add_widget(
+                MDLabel(
+                    text="No exercises assigned.",
+                    halign="center",
+                    size_hint_y=None,
+                    height=dp(50),
+                )
+            )
+            return
+
+        for ex_data in exs:
+            # capture ex_data separately, and accept the widget arg
+            card = Factory.GridCard(
+                text=f"[b]{ex_data['title']}[/b]\n{ex_data['description']}",
+                on_release=lambda instance, ed=ex_data: webbrowser.open(ed["video_url"])
+            )
+            container.add_widget(card)
+
+    def open_add_exercise_dialog(self):
+        content = MDBoxLayout(
+            orientation="vertical",
+            spacing=dp(10),
+            padding=dp(10),
+            size_hint_y=None,
+        )
+        # Create your fields
+        self.ex_title = MDTextField(hint_text="Title", size_hint_y=None, height=dp(48))
+        self.ex_desc  = MDTextField(hint_text="Description", multiline=True,
+                                    size_hint_y=None, height=dp(80))
+        self.ex_url   = MDTextField(hint_text="Video URL", size_hint_y=None, height=dp(48))
+        # Add them to the content
+        for w in (self.ex_title, self.ex_desc, self.ex_url):
+            content.add_widget(w)
+            # after adding each widget, expand the content's height
+            content.height = sum(child.height + content.spacing for child in content.children)
+
+        # Now create a dialog that’s tall enough
+        self.ex_dialog = MDDialog(
+            title="",
+            type="custom",
+            content_cls=content,
+            size_hint=(0.8, None),      # 80% of screen width, fixed height
+            height=dp(300),             # <-- enough to show all fields
+            buttons=[
+                MDFlatButton(text="CANCEL", on_release=lambda *a: self.ex_dialog.dismiss()),
+                MDFlatButton(text="SAVE",   on_release=lambda *a: self.submit_exercise(self.ex_dialog)),
+            ],
+        )
+        self.ex_dialog.open()
+
+    def submit_exercise(self, dialog):
+        dialog.dismiss()
+        elder = getattr(self, "selected_elder_for_ex", None)
+        if not elder:
+            toast("Select an elder first.")
+            return
+        title = self.ex_title.text.strip()
+        desc  = self.ex_desc.text.strip()
+        url   = self.ex_url.text.strip()
+        if not title or not url:
+            toast("Title and URL are required.")
+            return
+        ok = add_exercise_for_elder(elder["id"], title, desc, url)
+        toast("Exercise added." if ok else "Failed to add.")
+        if ok:
+            self.load_exercises_for_doctor()
+
+    def view_exercises_screen(self):
+        if self.user_role == "caregiver":
+            elder_id = get_elder_id_for_caregiver(self.user_id)
+        else:
+            elder_id = self.user_id
+
+        self.ids.health_manager.current = "view_exercises"
+
+        exs = get_exercises_for_elder(elder_id)
+        container = self.ids.exercises_list_elder
+        container.clear_widgets()
+
+        if not exs:
+            container.add_widget(
+                MDLabel(
+                    text="No exercises available.",
+                    halign="center",
+                    size_hint_y=None,
+                    height=dp(50),
+                )
+            )
+            return
+
+        for ex_data in exs:
+            card = Factory.GridCard(
+                text=f"[b]{ex_data['title']}[/b]\n{ex_data['description']}",
+                on_release=lambda instance, ed=ex_data: webbrowser.open(ed["video_url"])
+            )
+            container.add_widget(card)
+
 
 class MainApp(MDApp):
 
@@ -1101,6 +1235,13 @@ class MainApp(MDApp):
         self.dialog.dismiss()
         self.close_drawer()
         self.root.current = "login"
+
+    def open_url(self, url: str):
+        """Open the given URL in the system’s default browser/app."""
+        try:
+            utils.open_url(url)
+        except Exception as e:
+            toast(f"Nu am putut deschide link-ul: {e}")
 
 if __name__ == '__main__':
     MainApp().run()

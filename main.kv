@@ -343,8 +343,24 @@ ScreenManager:
 
                             MDIconButton:
                                 icon: "assets/icons/menu.png"
-                                icon_size: "48sp"
+                                icon_size: "42sp"
                                 on_release: nav_drawer.set_state("toggle")
+
+                        AnchorLayout:
+                            size_hint_x: None
+                            width: dp(200)           # max width when expanded
+                            anchor_x: 'left'
+                            pos_hint: {'x': .22}       # you can also use 'left' and tweak width/pos_hint
+                            anchor_y: 'center'
+                            MDTextField:
+                                id: top_search
+                                size_hint_x: 1
+                                width: self.parent.width
+                                opacity: 0            # start hidden
+                                hint_text: "Search…"
+                                on_text: root.on_search_text(self.text)
+                                on_focus:
+                                    if not self.focus: root.collapse_search()
 
                         # Right custom icon
                         AnchorLayout:
@@ -356,7 +372,7 @@ ScreenManager:
                                 icon_size: "36sp"
                                 theme_icon_color: "Custom"
                                 icon_color: 1, 1, 1, 1
-                                #on_release: app.on_magnify_click()
+                                on_release: root.on_magnify_click()
 
                     MDBottomNavigation:
                         panel_color: 0.827, 0.827, 0.827, 1

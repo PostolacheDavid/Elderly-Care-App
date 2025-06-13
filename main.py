@@ -1191,6 +1191,87 @@ class MainScreen(Screen):
             )
             container.add_widget(card)
 
+    def on_magnify_click(self):
+        """Show & focus the in-bar search field."""
+        search = self.ids.top_search
+        # expand instantly (or animate if you like)
+        search.width = dp(200)
+        search.opacity = 1
+        search.focus = True
+
+    def collapse_search(self):
+        """Hide the in-bar search field."""
+        search = self.ids.top_search
+        search.width = 0
+        search.opacity = 0
+        # dismiss suggestions
+        if hasattr(self, 'search_menu'):
+            self.search_menu.dismiss()
+
+    def on_search_text(self, query: str):
+        """Show an “autocomplete” dropdown of role-specific features."""
+        q = query.lower().strip()
+        role = self.user_role
+
+        # Define each role’s list of (display text, callback)
+        if role == "doctor":
+            choices = [
+                ("Add Patients Medicine",      self.add_medication_screen),
+                ("See Patients Medicine",      self.open_view_medications_doctor_screen),
+                ("Add Patients",               self.create_elder_screen),
+                ("Add Caregivers",             self.create_caregiver_screen),
+                ("Medical Controls",           self.open_doctor_controls_screen),
+                ("Medical Data",               self.open_doctor_docs_screen),
+                ("Exercises",                  self.open_doctor_exercises_screen),
+            ]
+        elif role == "elder":
+            choices = [
+                ("Medicine",        self.view_medications_screen),
+                ("Appointments",    self.view_controls_for_elder),
+                ("Medical Data",    self.view_documents_screen),
+                ("Exercises",       self.view_exercises_screen),
+            ]
+        else:  # caregiver
+            choices = [
+                ("Medicine",            self.load_elder_medications_for_caregiver),
+                ("Medical Controls",    self.view_controls_for_caregiver),
+                ("Medical Data",        self.view_documents_screen),
+                ("Exercises",           self.view_exercises_screen),
+            ]
+
+        # Filter by the typed query
+        matches = []
+        for text, cb in choices:
+            if q in text.lower():
+                matches.append({
+                    "text": text,
+                    "viewclass": "OneLineListItem",
+                    "on_release": lambda t=text, callback=cb: self._on_search_select(t, callback),
+                })
+
+        # 1) If an old menu exists, dismiss and delete it:
+        if hasattr(self, "search_menu"):
+            self.search_menu.dismiss()
+            del self.search_menu
+
+        # 2) Only build a new menu if there are matches:
+        if matches:
+            self.search_menu = MDDropdownMenu(
+                caller=self.ids.top_search,
+                items=matches,
+                width_mult=4,
+                max_height=dp(200),
+            )
+            self.search_menu.open()
+
+    def _on_search_select(self, text, callback):
+        """User tapped one suggestion."""
+        # collapse search UI
+        self.ids.top_search.text = ""
+        self.collapse_search()
+        # call the feature’s callback
+        callback()
+
 
 class MainApp(MDApp):
 

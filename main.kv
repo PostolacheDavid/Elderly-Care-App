@@ -403,7 +403,7 @@ ScreenManager:
                                             Widget:
 
                                         MDBoxLayout:
-                                            id: username_container
+                                            id: account_username_container
                                             orientation: "vertical"
                                             size_hint_y: None
                                             # collapse when disabled:
@@ -428,7 +428,7 @@ ScreenManager:
                                             Widget:
 
                                         MDBoxLayout:
-                                            id: email_container
+                                            id: account_email_container
                                             orientation: "vertical"
                                             size_hint_y: None
                                             height: 0 if self.disabled else self.minimum_height
@@ -452,7 +452,7 @@ ScreenManager:
                                             Widget:
 
                                         MDBoxLayout:
-                                            id: password_container
+                                            id: account_password_container
                                             orientation: "vertical"
                                             size_hint_y: None
                                             height: 0 if self.disabled else self.minimum_height
@@ -533,6 +533,108 @@ ScreenManager:
                                                         source:"assets/icons/fitness.png"
                                                         text:"Fitness"
                                                         on_release: root.open_doctor_exercises_screen()
+                                                    GridCard:
+                                                        source: "assets/icons/settings.png"
+                                                        text: "Manage Accounts"
+                                                        on_release: root.open_manage_accounts()
+                                    
+                                    Screen:
+                                        name: "manage_accounts"
+
+                                        ScrollView:
+                                            MDBoxLayout:
+                                                orientation: "vertical"
+                                                padding: dp(20)
+                                                spacing: dp(12)
+                                                size_hint_y: None
+                                                height: self.minimum_height
+
+                                                MDTextField:
+                                                    id: user_dropdown
+                                                    hint_text: "Select Elder or Caregiver"
+                                                    readonly: True
+                                                    on_focus:
+                                                        if self.focus: root.open_manage_user_menu()
+
+                                                #--- Change Username ---
+                                                MDRaisedButton:
+                                                    text: "Change Username"
+                                                    size_hint_x: 0.8
+                                                    pos_hint: {"center_x": .5}
+                                                    on_release: root.toggle_manage_username_field()
+
+                                                MDBoxLayout:
+                                                    id: username_container
+                                                    orientation: "vertical"
+                                                    size_hint_y: None
+                                                    height: dp(56)
+                                                    disabled: True
+                                                    opacity: 0
+                                                    MDTextField:
+                                                        id: new_username
+                                                        hint_text: "New username"
+                                                        size_hint_x: 0.8
+                                                        pos_hint: {"center_x": .5}
+
+                                                #--- Change Email ---
+                                                MDRaisedButton:
+                                                    text: "Change Email"
+                                                    size_hint_x: 0.8
+                                                    pos_hint: {"center_x": .5}
+                                                    on_release: root.toggle_manage_email_field()
+
+                                                MDBoxLayout:
+                                                    id: email_container
+                                                    orientation: "vertical"
+                                                    size_hint_y: None
+                                                    height: dp(56)
+                                                    disabled: True
+                                                    opacity: 0
+                                                    MDTextField:
+                                                        id: new_email
+                                                        hint_text: "New email"
+                                                        size_hint_x: 0.8
+                                                        pos_hint: {"center_x": .5}
+
+                                                #--- Change Password ---
+                                                MDRaisedButton:
+                                                    text: "Change Password"
+                                                    size_hint_x: 0.8
+                                                    pos_hint: {"center_x": .5}
+                                                    on_release: root.toggle_manage_password_fields()
+
+                                                MDBoxLayout:
+                                                    id: password_container
+                                                    orientation: "vertical"
+                                                    size_hint_y: None
+                                                    height: dp(112)
+                                                    disabled: True
+                                                    opacity: 0
+                                                    MDTextField:
+                                                        id: new_user_password
+                                                        hint_text: "New password"
+                                                        password: True
+                                                        size_hint_x: 0.8
+                                                        pos_hint: {"center_x": .5}
+                                                    MDTextField:
+                                                        id: confirm_user_password
+                                                        hint_text: "Confirm password"
+                                                        password: True
+                                                        size_hint_x: 0.8
+                                                        pos_hint: {"center_x": .5}
+
+                                                #--- Apply / Back ---
+                                                MDRaisedButton:
+                                                    text: "Apply Changes"
+                                                    size_hint_x: 0.8
+                                                    pos_hint: {"center_x": .5}
+                                                    on_release: root.apply_manage_user_changes()
+
+                                                MDRaisedButton:
+                                                    text: "Back"
+                                                    size_hint_x: 0.8
+                                                    pos_hint: {"center_x": .5}
+                                                    on_release: root.update_ui()
 
                                     Screen:
                                         name: "doctor_exercises"

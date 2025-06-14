@@ -489,3 +489,63 @@ def update_user_profile(user_id: int,
     except mysql.connector.Error as e:
         print(f"MySQL Error (update_user_profile): {e}")
         return False
+    
+def get_caregivers_by_doctor(doctor_id: int) -> list[dict]:
+    conn = mysql.connector.connect(**DB_CONFIG)
+    cur = conn.cursor(dictionary=True)
+    cur.execute("""
+      SELECT id, username
+      FROM users
+      WHERE role='caregiver' AND doctor_id=%s
+    """, (doctor_id,))
+    rows = cur.fetchall()
+    cur.close()
+    conn.close()
+    return rows
+
+def update_linked_user_password(user_id: int, new_password: str) -> bool:
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cur = conn.cursor()
+        hashed = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+        cur.execute("UPDATE users SET password=%s WHERE id=%s", (hashed, user_id))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    except mysql.connector.Error as e:
+        print(f"MySQL Error (update_linked_user_password): {e}")
+        return False
+    
+def update_linked_user_profile(user_id: int,
+                               new_username: str | None = None,
+                               new_email:    str | None = None
+                              ) -> bool:
+    """
+    Update only username and/or email for a linked user.
+    """
+    fields, params = [], []
+    if new_username:
+        fields.append("username = %s")
+        params.append(new_username)
+    if new_email:
+        fields.append("email = %s")
+        params.append(new_email)
+    if not fields:
+        return True
+
+    sql = f"UPDATE users SET {', '.join(fields)} WHERE id = %s"
+    params.append(user_id)
+
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cur  = conn.cursor()
+        cur.execute(sql, tuple(params))
+        conn.commit()
+        cur.close()
+        conn.close()
+        return True
+    except mysql.connector.Error as e:
+        print(f"MySQL Error (update_linked_user_profile): {e}")
+        return False
+

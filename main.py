@@ -6,7 +6,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
 from kivy.properties import StringProperty, NumericProperty, ObjectProperty
 from database import check_user
-from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor, add_elder_medication, get_medications_for_elder, get_elder_id_for_caregiver, delete_elder_medication, get_medications_with_id_for_elder, add_medical_control, get_controls_for_elder, delete_medical_control, add_elder_document, get_documents_for_elder, get_document_data, delete_elder_document, add_exercise_for_elder, get_exercises_for_elder, update_user_profile, get_user_email
+from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor, add_elder_medication, get_medications_for_elder, get_elder_id_for_caregiver, delete_elder_medication, get_medications_with_id_for_elder, add_medical_control, get_controls_for_elder, delete_medical_control, add_elder_document, get_documents_for_elder, get_document_data, delete_elder_document, add_exercise_for_elder, get_exercises_for_elder, update_user_profile, get_user_email, update_linked_user_password, get_caregivers_by_doctor, update_linked_user_profile
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
@@ -1359,22 +1359,148 @@ class MainScreen(Screen):
             self.show_popup("Failed to update profile. Please try again.")
 
     def toggle_username_field(self):
-        c = self.ids.username_container
-        show = c.disabled
-        c.disabled = not show
-        c.opacity  = 1 if show else 0
+        c = self.ids.account_username_container
+        c.disabled = not c.disabled
+        # your KV rule already does: height = 0 if disabled else minimum_height
+        c.opacity = 1 if not c.disabled else 0
 
     def toggle_email_field(self):
-        c = self.ids.email_container
-        show = c.disabled
-        c.disabled = not show
-        c.opacity  = 1 if show else 0
+        c = self.ids.account_email_container
+        c.disabled = not c.disabled
+        c.opacity = 1 if not c.disabled else 0
 
     def toggle_password_fields(self):
+        c = self.ids.account_password_container
+        c.disabled = not c.disabled
+        c.opacity = 1 if not c.disabled else 0
+
+    def toggle_manage_username_field(self):
+        c = self.ids.username_container
+        c.disabled = not c.disabled
+        c.opacity = 1 if not c.disabled else 0
+
+    def toggle_manage_email_field(self):
+        c = self.ids.email_container
+        c.disabled = not c.disabled
+        c.opacity = 1 if not c.disabled else 0
+
+    def toggle_manage_password_fields(self):
         c = self.ids.password_container
-        show = c.disabled
-        c.disabled = not show
-        c.opacity  = 1 if show else 0
+        c.disabled = not c.disabled
+        c.opacity = 1 if not c.disabled else 0
+
+    def open_manage_accounts(self):
+        self.ids.health_manager.current = "manage_accounts"
+        # Pre-load the list of both elders and caregivers
+        self.linked_users = []
+        # elders
+        self.linked_users += get_elders_by_doctor(self.user_id)
+        # caregivers
+        # you’ll need a similar helper, e.g. get_caregivers_by_doctor()
+        self.linked_users += get_caregivers_by_doctor(self.user_id)
+
+    def open_manage_user_menu(self):
+        items = [{
+            "text": u["username"],
+            "viewclass": "OneLineListItem",
+            "on_release": lambda u=u: self.select_manage_user(u)
+        } for u in self.linked_users]
+
+        if hasattr(self, "manage_user_menu"):
+            self.manage_user_menu.dismiss()
+        self.manage_user_menu = MDDropdownMenu(
+            caller=self.ids.user_dropdown,
+            items=items,
+            width_mult=4
+        )
+        self.manage_user_menu.open()
+
+    def select_manage_user(self, user):
+        self.manage_user_menu.dismiss()
+        self.ids.user_dropdown.text = user["username"]
+        self.selected_manage_user = user
+
+    def reset_linked_user_password(self):
+        pwd = self.ids.new_user_password.text.strip()
+        confirm = self.ids.confirm_user_password.text.strip()
+        if not pwd or pwd != confirm:
+            self.show_popup("Passwords must match and not be empty.")
+            return
+
+        # call a DB helper that only updates password
+        ok = update_linked_user_password(self.selected_manage_user["id"], pwd)
+        if ok:
+            self.show_popup(f"Password for {self.selected_manage_user['username']} reset.")
+            # clear fields
+            self.ids.new_user_password.text = ""
+            self.ids.confirm_user_password.text = ""
+        else:
+            self.show_popup("Failed to reset password.")
+
+    def apply_manage_user_changes(self):
+        """
+        Called by the Manage Accounts “Apply Changes” button.
+        Will update a linked user’s username, email, and—if provided—a new password.
+        """
+        # 1) Make sure someone is selected
+        if not hasattr(self, "selected_manage_user"):
+            toast("No user selected.")
+            return
+        user = self.selected_manage_user
+
+        # 2) Grab the inputs
+        new_username = self.ids.new_username.text.strip()
+        new_email    = self.ids.new_email.text.strip()
+        new_pass     = self.ids.new_user_password.text
+        confirm_pass = self.ids.confirm_user_password.text
+
+        # 3) Validate password if provided
+        if new_pass or confirm_pass:
+            if new_pass != confirm_pass:
+                toast("Passwords do not match.")
+                return
+            # run password-only updater
+            from database import update_linked_user_password
+            ok_pw = update_linked_user_password(user["id"], new_pass)
+            if ok_pw:
+                toast("Password updated.")
+            else:
+                toast("Failed to update password.")
+        else:
+            ok_pw = True  # nothing to do
+
+        # 4) Now handle username/email if changed
+        #    (skip if both blank)
+        if new_username or new_email:
+            from database import update_linked_user_profile
+            # blank → None so the helper skips that field
+            un = new_username if new_username else None
+            em = new_email    if new_email    else None
+            ok_profile = update_linked_user_profile(
+                user_id      = user["id"],
+                new_username = un,
+                new_email    = em
+            )
+            if ok_profile:
+                toast("Profile updated.")
+            else:
+                toast("Failed to update profile.")
+        else:
+            ok_profile = True
+
+        # 5) If everything ok, clear & hide
+        if ok_pw and ok_profile:
+            # clear fields
+            self.ids.new_username.text = ""
+            self.ids.new_email.text    = ""
+            self.ids.new_user_password.text        = ""
+            self.ids.confirm_user_password.text    = ""
+            # hide the containers again
+            for cid in ("username_container", "email_container", "password_container"):
+                c = self.ids[cid]
+                c.disabled = True
+                c.opacity  = 0
+
 
 
 

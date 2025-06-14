@@ -6,7 +6,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
 from kivy.properties import StringProperty, NumericProperty, ObjectProperty
 from database import check_user
-from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor, add_elder_medication, get_medications_for_elder, get_elder_id_for_caregiver, delete_elder_medication, get_medications_with_id_for_elder, add_medical_control, get_controls_for_elder, delete_medical_control, add_elder_document, get_documents_for_elder, get_document_data, delete_elder_document, add_exercise_for_elder, get_exercises_for_elder
+from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor, add_elder_medication, get_medications_for_elder, get_elder_id_for_caregiver, delete_elder_medication, get_medications_with_id_for_elder, add_medical_control, get_controls_for_elder, delete_medical_control, add_elder_document, get_documents_for_elder, get_document_data, delete_elder_document, add_exercise_for_elder, get_exercises_for_elder, update_user_profile, get_user_email
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
@@ -245,16 +245,44 @@ class MainScreen(Screen):
         self.update_ui()
 
     def update_ui(self):
+        """
+        Refresh the main UI whenever the user logs in, switches tabs, or returns
+        to the dashboard. This will:
+          1. Switch the Health dashboard panel based on self.user_role
+          2. Fetch and store the up-to-date email address
+          3. Seed the Account tab’s text fields with username/email
+          4. Clear any residual password inputs
+        """
+        # 1) role-based panel selection
         if self.user_role == "doctor":
             self.ids.health_manager.current = "doctor_health"
         elif self.user_role == "elder":
             self.ids.health_manager.current = "elder_health"
         elif self.user_role == "caregiver":
             self.ids.health_manager.current = "caregiver_health"
+            # if you need the linked elder_id for caregiver elsewhere:
             self.elder_id = get_elder_id_for_caregiver(self.user_id)
-            print("Elder ID asociat caregiverului:", self.elder_id)
         elif self.user_role == "admin":
             self.ids.health_manager.current = "admin"
+
+        # 2) load the current email from the database
+        try:
+            self.email = get_user_email(self.user_id) or ""
+        except Exception as e:
+            print(f"[ERROR] could not fetch email for user_id={self.user_id}: {e}")
+            self.email = ""
+
+        # 3) seed the Account form fields, if they exist
+        if hasattr(self.ids, "account_username"):
+            self.ids.account_username.text = self.username or ""
+        if hasattr(self.ids, "account_email"):
+            self.ids.account_email.text = self.email
+
+        # 4) clear any leftover password entries
+        if hasattr(self.ids, "account_password"):
+            self.ids.account_password.text = ""
+        if hasattr(self.ids, "account_password_confirm"):
+            self.ids.account_password_confirm.text = ""
 
     def approve_account(self, doctor_id):
         if approve_doctor(doctor_id):
@@ -1222,21 +1250,21 @@ class MainScreen(Screen):
                 ("Add Caregivers",             self.create_caregiver_screen),
                 ("Medical Controls",           self.open_doctor_controls_screen),
                 ("Medical Data",               self.open_doctor_docs_screen),
-                ("Exercises",                  self.open_doctor_exercises_screen),
+                ("Fitness",                  self.open_doctor_exercises_screen),
             ]
         elif role == "elder":
             choices = [
                 ("Medicine",        self.view_medications_screen),
                 ("Appointments",    self.view_controls_for_elder),
                 ("Medical Data",    self.view_documents_screen),
-                ("Exercises",       self.view_exercises_screen),
+                ("Fitness",       self.view_exercises_screen),
             ]
         else:  # caregiver
             choices = [
                 ("Medicine",            self.load_elder_medications_for_caregiver),
                 ("Medical Controls",    self.view_controls_for_caregiver),
                 ("Medical Data",        self.view_documents_screen),
-                ("Exercises",           self.view_exercises_screen),
+                ("Fitness",           self.view_exercises_screen),
             ]
 
         # Filter by the typed query
@@ -1271,6 +1299,83 @@ class MainScreen(Screen):
         self.collapse_search()
         # call the feature’s callback
         callback()
+
+    def update_user_profile(self):
+        """
+        Called by the “Save” button on the Account tab.
+        Only send to the database the fields the user actually changed,
+        but always provide a non-null username and email.
+        """
+        # 1) Read the form values
+        new_username = self.ids.account_username.text.strip()
+        new_email    = self.ids.account_email.text.strip()
+        new_pass     = self.ids.account_password.text
+        confirm_pass = self.ids.account_password_confirm.text
+
+        # 2) Detect what actually changed
+        changed = {}
+        if new_username and new_username != self.username:
+            changed["username"] = new_username
+        if new_email and new_email != self.email:
+            changed["email"] = new_email
+
+        # 3) Password only if both fields non-empty and match
+        if new_pass or confirm_pass:
+            if new_pass != confirm_pass:
+                self.show_popup("Passwords do not match.")
+                return
+            changed["password"] = new_pass
+
+        # 4) Bail out if nothing changed
+        if not changed:
+            self.show_popup("No changes detected.")
+            return
+
+        # 5) Prepare the actual values to send
+        #    – always send a username/email (fall back to current)
+        send_username = changed.get("username", self.username)
+        send_email    = changed.get("email",    self.email)
+        send_password = changed.get("password", None)
+
+        # 6) Call the DB helper
+        success = update_user_profile(
+            user_id      = self.user_id,
+            new_username = send_username,
+            new_email    = send_email,
+            new_password = send_password
+        )
+
+        # 7) Feedback and sync local state
+        if success:
+            self.show_popup("Profile updated successfully.")
+            if "username" in changed:
+                self.username = send_username
+            if "email" in changed:
+                self.email = send_email
+            # Clear password fields
+            self.ids.account_password.text = ""
+            self.ids.account_password_confirm.text = ""
+        else:
+            self.show_popup("Failed to update profile. Please try again.")
+
+    def toggle_username_field(self):
+        c = self.ids.username_container
+        show = c.disabled
+        c.disabled = not show
+        c.opacity  = 1 if show else 0
+
+    def toggle_email_field(self):
+        c = self.ids.email_container
+        show = c.disabled
+        c.disabled = not show
+        c.opacity  = 1 if show else 0
+
+    def toggle_password_fields(self):
+        c = self.ids.password_container
+        show = c.disabled
+        c.disabled = not show
+        c.opacity  = 1 if show else 0
+
 
 
 class MainApp(MDApp):

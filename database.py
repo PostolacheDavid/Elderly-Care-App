@@ -433,3 +433,59 @@ def get_exercises_for_elder(elder_id: int) -> list[dict]:
       {"id": r["id"], "title": r["title"], "description": r["description"], "video_url": r["video_url"]}
       for r in rows
     ]
+
+def get_user_email(user_id: int) -> str | None:
+    """
+    Return the email for the given user_id, or None if not found.
+    """
+    try:
+        conn   = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+        cursor.execute("SELECT email FROM users WHERE id = %s", (user_id,))
+        row = cursor.fetchone()
+        conn.close()
+        return row[0] if row else None
+    except mysql.connector.Error as e:
+        print(f"MySQL Error (get_user_email): {e}")
+        return None
+
+def update_user_profile(user_id: int,
+                        new_username: str,
+                        new_email: str,
+                        new_password: str | None = None
+                       ) -> bool:
+    """
+    Update the given user's username, email, and -- if provided -- password.
+    Returns True on success.
+    """
+    try:
+        conn   = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+
+        if new_password:
+            hashed = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+            sql = """
+                UPDATE users
+                   SET username = %s,
+                       email    = %s,
+                       password = %s
+                 WHERE id       = %s
+            """
+            params = (new_username, new_email, hashed, user_id)
+        else:
+            sql = """
+                UPDATE users
+                   SET username = %s,
+                       email    = %s
+                 WHERE id       = %s
+            """
+            params = (new_username, new_email, user_id)
+
+        cursor.execute(sql, params)
+        conn.commit()
+        conn.close()
+        return True
+
+    except mysql.connector.Error as e:
+        print(f"MySQL Error (update_user_profile): {e}")
+        return False

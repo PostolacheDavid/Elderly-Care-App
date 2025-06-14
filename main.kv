@@ -381,15 +381,104 @@ ScreenManager:
                             text:"Account"
                             icon:"assets/icons/account.png"
                             MDScreen: #Ecran pentru atunci cand apesi butonul
-                                MDBoxLayout:
-                                    pos_hint:{'center_x':0.5, 'center_y':0.5}
-                                    orientation:'vertical'
-                                    size_hint_y: 0.4
-                                    size_hint_x: 0.4
-                                    spacing: "40dp"
-                                    MDLabel:
-                                        text: "Welcome to the Account Screen!"
-                                        halign: "center"
+                                ScrollView:
+                                    do_scroll_x: False
+
+                                    MDBoxLayout:
+                                        id: account_box
+                                        orientation: "vertical"
+                                        padding: dp(20)
+                                        spacing: dp(12)
+                                        size_hint_y: None
+                                        height: self.minimum_height
+
+                                        # Change Username
+                                        MDBoxLayout:
+                                            size_hint_y: None
+                                            height: dp(40)
+                                            spacing: dp(8)
+                                            MDRaisedButton:
+                                                text: "Change Username"
+                                                on_release: root.toggle_username_field()
+                                            Widget:
+
+                                        MDBoxLayout:
+                                            id: username_container
+                                            orientation: "vertical"
+                                            size_hint_y: None
+                                            # collapse when disabled:
+                                            height: 0 if self.disabled else self.minimum_height
+                                            opacity: 0 if self.disabled else 1
+                                            disabled: True
+
+                                            MDTextField:
+                                                id: account_username
+                                                hint_text: "New username"
+                                                size_hint_x: 0.8
+                                                pos_hint: {"center_x": 0.5}
+
+                                        # Change Email
+                                        MDBoxLayout:
+                                            size_hint_y: None
+                                            height: dp(40)
+                                            spacing: dp(8)
+                                            MDRaisedButton:
+                                                text: "Change Email"
+                                                on_release: root.toggle_email_field()
+                                            Widget:
+
+                                        MDBoxLayout:
+                                            id: email_container
+                                            orientation: "vertical"
+                                            size_hint_y: None
+                                            height: 0 if self.disabled else self.minimum_height
+                                            opacity: 0 if self.disabled else 1
+                                            disabled: True
+
+                                            MDTextField:
+                                                id: account_email
+                                                hint_text: "New email"
+                                                size_hint_x: 0.8
+                                                pos_hint: {"center_x": 0.5}
+
+                                        # Change Password
+                                        MDBoxLayout:
+                                            size_hint_y: None
+                                            height: dp(40)
+                                            spacing: dp(8)
+                                            MDRaisedButton:
+                                                text: "Change Password"
+                                                on_release: root.toggle_password_fields()
+                                            Widget:
+
+                                        MDBoxLayout:
+                                            id: password_container
+                                            orientation: "vertical"
+                                            size_hint_y: None
+                                            height: 0 if self.disabled else self.minimum_height
+                                            opacity: 0 if self.disabled else 1
+                                            disabled: True
+
+                                            MDTextField:
+                                                id: account_password
+                                                hint_text: "New password"
+                                                password: True
+                                                size_hint_x: 0.8
+                                                pos_hint: {"center_x": 0.5}
+
+                                            MDTextField:
+                                                id: account_password_confirm
+                                                hint_text: "Confirm new password"
+                                                password: True
+                                                size_hint_x: 0.8
+                                                pos_hint: {"center_x": 0.5}
+
+                                        # Save Button
+                                        MDRaisedButton:
+                                            text: "Save Changes"
+                                            size_hint_x: 0.5
+                                            pos_hint: {"center_x": 0.5}
+                                            on_release: root.update_user_profile()
                         MDBottomNavigationItem:
                             name:"Health Screen"
                             text:"Health"

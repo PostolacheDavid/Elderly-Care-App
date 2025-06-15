@@ -459,6 +459,37 @@ class MainScreen(Screen):
             print(f"Eroare la încărcarea meds.json: {e}")
             return []
         
+    def load_medications_for_caregiver(self):
+        elder_id = get_elder_id_for_caregiver(self.user_id)
+        if elder_id is None:
+            return
+
+        medications = get_medications_for_elder(elder_id)
+        self.ids.caregiver_medications_list.clear_widgets()
+
+        for med in medications:
+            layout = MDBoxLayout(
+                orientation="vertical",
+                size_hint_y=None,
+                height=dp(140),
+                padding=(dp(10), dp(10)),
+                spacing=dp(5)
+            )
+
+            fields = [
+                f"Denumire comercială: {med['denumire_comerciala']}",
+                f"Formă farmaceutică: {med['forma_farmaceutica']}",
+                f"Concentrație: {med['concentratie']}",
+                f"Frecvență: {med['frecventa']}",
+                f"Observații: {med['observatii']}"
+            ]
+
+            for text in fields:
+                layout.add_widget(MDLabel(text=text, theme_text_color="Primary"))
+
+            self.ids.caregiver_medications_list.add_widget(layout)
+
+        
     def open_medication_dialog(self):
         if not hasattr(self, "meds_data") or not self.meds_data:
             return

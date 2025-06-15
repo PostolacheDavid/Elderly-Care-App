@@ -6,11 +6,19 @@ def hash_password(password):
     salt = bcrypt.gensalt()
     return bcrypt.hashpw(password.encode(), salt).decode()
 
-DB_CONFIG = {
+""" DB_CONFIG = {
     "host": "localhost",
     "user": "root",
     "password": "090930021",
     "database": "elderly_care"
+} """
+
+DB_CONFIG = {
+    "host": "sql7.freesqldatabase.com",
+    "user": "sql7784902",
+    "password": "Drm7nH6nxU",
+    "database": "sql7784902",
+    "port": 3306
 }
 
 def register_admin(username, password):

@@ -553,8 +553,7 @@ ScreenManager:
                                                     id: user_dropdown
                                                     hint_text: "Select Elder or Caregiver"
                                                     readonly: True
-                                                    on_focus:
-                                                        if self.focus: root.open_manage_user_menu()
+                                                    on_touch_down: if self.collide_point(*args[1].pos): root.open_manage_user_menu()
 
                                                 #--- Change Username ---
                                                 MDRaisedButton:
@@ -649,7 +648,7 @@ ScreenManager:
                                                 readonly: True
                                                 size_hint_y: None
                                                 height: dp(56)
-                                                on_focus: if self.focus: root.open_elder_menu_for_exercises()
+                                                on_touch_down: if self.collide_point(*args[1].pos): root.open_elder_menu_for_exercises()
 
                                             ScrollView:
                                                 size_hint_y: 1
@@ -685,7 +684,7 @@ ScreenManager:
                                                 readonly: True
                                                 size_hint_y: None 
                                                 height: dp(56)
-                                                on_focus: if self.focus: root.open_elder_menu_for_docs()
+                                                on_touch_down: if self.collide_point(*args[1].pos): root.open_elder_menu_for_docs()
 
                                             ScrollView:
                                                 size_hint_y: 1
@@ -729,8 +728,8 @@ ScreenManager:
                                                     readonly: True
                                                     size_hint_y: None
                                                     height: dp(56)
-                                                    on_focus:
-                                                        if self.focus: root.open_elder_menu_for_controls()
+                                                    on_touch_down: if self.collide_point(*args[1].pos): app.root.get_screen("main").open_elder_menu_for_controls()
+
 
                                                 MDTextField:
                                                     id: ctrl_name
@@ -893,7 +892,7 @@ ScreenManager:
                                                     icon_right_color: app.theme_cls.primary_color
                                                     pos_hint: {"center_x": 0.5, "top": 0.9}   # adjust positioning as needed
                                                     size_hint_x: 0.8        # adjust width as needed
-                                                    on_focus: if self.focus: root.open_elder_menu()
+                                                    on_touch_down: if self.collide_point(*args[1].pos): root.open_elder_menu()
 
                                                 MDRaisedButton:
                                                     text: "Create Caregiver"
@@ -949,7 +948,7 @@ ScreenManager:
                                                     id: med_name
                                                     hint_text: "Alege medicament"
                                                     readonly: True
-                                                    on_focus: if self.focus: root.open_medication_dialog()
+                                                    on_touch_down: if self.collide_point(*args[1].pos): root.open_medication_dialog()
 
                                                 MDTextField:
                                                     id: med_forma
@@ -971,7 +970,7 @@ ScreenManager:
                                                     hint_text: "Selectează pacientul"
                                                     mode: "rectangle"
                                                     readonly: True
-                                                    on_focus: if self.focus: root.open_elder_menu_med()
+                                                    on_touch_down: if self.collide_point(*args[1].pos): root.open_elder_menu_med()
 
                                                 MDTextField:
                                                     id: med_notes
@@ -1010,8 +1009,7 @@ ScreenManager:
                                                     readonly: True
                                                     size_hint_y: None
                                                     height: dp(56)
-                                                    on_focus:
-                                                        if self.focus: root.open_elder_menu_for_doctor_view()
+                                                    on_touch_down: if self.collide_point(*args[1].pos): root.open_elder_menu_for_doctor_view()
 
                                                 # Your meds list container
                                                 MDBoxLayout:
@@ -1179,19 +1177,20 @@ ScreenManager:
 
                                     MDScreen:
                                         name: "view_medications_care"
+                                        on_pre_enter: root.load_medications_for_caregiver()
 
                                         MDBoxLayout:
                                             orientation: "vertical"
 
                                             ScrollView:
                                                 MDBoxLayout:
-                                                    id: medications_list
+                                                    id: caregiver_medications_list
                                                     orientation: "vertical"
                                                     size_hint_y: None
                                                     height: self.minimum_height
                                                     padding: dp(10)
                                                     spacing: dp(10)
-                                                
+
                                             MDRaisedButton:
                                                 text: "Back"
                                                 pos_hint: {"center_x": 0.5}

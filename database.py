@@ -557,3 +557,14 @@ def update_linked_user_profile(user_id: int,
         print(f"MySQL Error (update_linked_user_profile): {e}")
         return False
 
+def get_all_users():
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT id, username, email, role FROM users ORDER BY username")
+        users = cursor.fetchall()
+        conn.close()
+        return users
+    except mysql.connector.Error as e:
+        print(f"MySQL Error (get_all_users): {e}")
+        return []

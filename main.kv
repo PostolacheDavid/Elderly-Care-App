@@ -903,16 +903,12 @@ ScreenManager:
                                                     pos_hint: {"center_x": 0.5}
                                                     on_release: root.update_ui()
 
-                                    MDScreen:
+                                    Screen:
                                         name: "view_medications"
                                         # remove the old on_pre_enter line; we'll call view_medications_screen() manually
 
                                         MDBoxLayout:
                                             orientation: "vertical"
-
-                                            MDTopAppBar:
-                                                title: "My Medications"
-                                                left_action_items: [["arrow-left", lambda x: root.update_ui()]]
 
                                             ScrollView:
                                                 MDBoxLayout:
@@ -1048,7 +1044,7 @@ ScreenManager:
                                                     GridCard:
                                                         source:"assets/icons/pill.png"
                                                         text:"Medicine"
-                                                        on_release: root.view_medications_screen()
+                                                        on_release: root.go_to_view_medications()
                                                     GridCard:
                                                         source:"assets/icons/nurse.png"
                                                         text:"Appointments"
@@ -1218,6 +1214,10 @@ ScreenManager:
                                                         source:"assets/icons/padlock.png"
                                                         text:"Approve Accounts"
                                                         on_release: root.approve_accounts_screen()
+                                                    GridCard:
+                                                        source:"assets/icons/account.png"
+                                                        text:"Modify Accounts"
+                                                        on_release: root.modify_accounts_screen()
                                     Screen:
                                         name: "admin_approve_accounts"
 
@@ -1229,6 +1229,56 @@ ScreenManager:
                                                 padding: "20dp"
                                                 size_hint_y: None
                                                 height: self.minimum_height
+                                                MDRaisedButton:
+                                                    text: "Back"
+                                                    pos_hint: {"center_x": 0.5}
+                                                    on_release: root.update_ui()
+
+                                    MDScreen:
+                                        name: "edit_any_account"
+
+                                        MDBoxLayout:
+                                            orientation: "vertical"
+                                            spacing: dp(10)
+                                            padding: [dp(20), 0, dp(20), dp(20)]
+
+                                            ScrollView:
+                                                MDBoxLayout:
+                                                    orientation: "vertical"
+                                                    size_hint_y: None
+                                                    height: self.minimum_height
+                                                    spacing: dp(10)
+
+                                                    MDTextField:
+                                                        id: select_user_dropdown
+                                                        hint_text: "Selectează utilizator"
+                                                        readonly: True
+                                                        on_touch_down: if self.collide_point(*args[1].pos): root.open_all_users_dropdown()
+
+                                                    MDTextField:
+                                                        id: username_field
+                                                        hint_text: "Nume utilizator"
+
+                                                    MDTextField:
+                                                        id: email_field
+                                                        hint_text: "Email"
+
+                                                    MDTextField:
+                                                        id: password_field
+                                                        hint_text: "Parolă nouă (opțional)"
+                                                        password: True
+
+                                                    MDRaisedButton:
+                                                        text: "Salvează modificările"
+                                                        on_release: root.save_any_user_update()
+                                                        
+                                                    MDRaisedButton:
+                                                        text: "Back"
+                                                        pos_hint: {"center_x": 0.5}
+                                                        on_release: root.update_ui()
+                                                    
+
+
 
                         #MDBottomNavigationItem:
                             #name:"Emergency Screen"
@@ -1316,26 +1366,33 @@ ScreenManager:
             app.root.get_screen("main").delete_medication_dialog(root.med_id)
 
 <GridCard@MDCard>:
-    ripple_behavior:True
-    orientation:'vertical'
-    source:''
-    radius:25
-    folder_size:''
-    text:''
-    padding:'20dp'
-    spacing:'20dp'
-    size_hint_y:None
-    height:'150dp'
+    ripple_behavior: True
+    orientation: 'vertical'
+    source: ''
+    radius: 25
+    folder_size: ''
+    text: ''
+    padding: '20dp'
+    spacing: '20dp'
+    size_hint_y: None
+    height: '150dp'  # Slightly increased card height for spacing
     elevation: 1
+
     Image:
-        source:root.source
+        source: root.source
+        size_hint_y: None
+        height: dp(35)  # ← Increased icon size (adjust to taste)
+        allow_stretch: True
+        keep_ratio: True
+
     MDBoxLayout:
-        orientation:'vertical'
-        adaptive_height:True
+        orientation: 'vertical'
+        adaptive_height: True
+
         MDLabel:
-            text:root.text
-            adaptive_height:True
-            halign:'center'
+            text: root.text
+            adaptive_height: True
+            halign: 'center'
 
 <MedicationSearchDialog@MDBoxLayout>:
     orientation: "vertical"

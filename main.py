@@ -6,7 +6,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
 from kivy.properties import StringProperty, NumericProperty, ObjectProperty
 from database import check_user
-from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor, add_elder_medication, get_medications_for_elder, get_elder_id_for_caregiver, delete_elder_medication, get_medications_with_id_for_elder, add_medical_control, get_controls_for_elder, delete_medical_control, add_elder_document, get_documents_for_elder, get_document_data, delete_elder_document, add_exercise_for_elder, get_exercises_for_elder, update_user_profile, get_user_email, update_linked_user_password, get_caregivers_by_doctor, update_linked_user_profile
+from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor, add_elder_medication, get_medications_for_elder, get_elder_id_for_caregiver, delete_elder_medication, get_medications_with_id_for_elder, add_medical_control, get_controls_for_elder, delete_medical_control, add_elder_document, get_documents_for_elder, get_document_data, delete_elder_document, add_exercise_for_elder, get_exercises_for_elder, update_user_profile, get_user_email, update_linked_user_password, get_caregivers_by_doctor, update_linked_user_profile, get_all_users
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
@@ -189,10 +189,12 @@ class DoctorRegisterScreen(Screen):
 class MainScreen(Screen):
     user_role = StringProperty("")
     user_id = NumericProperty(0)
+    selected_user_for_edit = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.elders_list = []
+        self.selected_user_for_edit = None
 
     def on_kv_post(self, base_widget):
         meds_path = os.path.join(os.path.dirname(__file__), "meds.json")
@@ -621,50 +623,98 @@ class MainScreen(Screen):
         )
         self.doctor_elder_menu.open()
 
-    def view_medications_screen(self):
-        """
-        Called when an Elder taps “Medicine” on their dashboard GridCard.
-        This reuses the caregiver’s logic but passes the Elder’s own user_id.
-        """
-        elder_id = self.user_id
-        medications = get_medications_for_elder(elder_id)
-        print(f"[DEBUG] view_medications_screen() called for elder_id={elder_id}, meds={medications!r}")
+    def load_elder_medications(self):
+        try:
+            medications = get_medications_for_elder(self.user_id)
+            self.ids.elder_medications_list.clear_widgets()
 
-        container = self.ids.medications_list
-        container.clear_widgets()
-
-        if not medications:
-            # 1) Add the “no meds” label
-            container.add_widget(
-                MDLabel(
-                    text="There is no registered medication.",
-                    halign="center",
-                    size_hint_y=None,
-                    height=dp(50)
+            for med in medications:
+                item = OneLineListItem(
+                    text=f"{med['denumire_comerciala']} - {med['frecventa']}"
                 )
-            )
-            # 2) Now switch to the “view_medications_care” screen and return
-            self.ids.health_manager.current = "view_medications_care"
-            return
+                self.ids.elder_medications_list.add_widget(item)
+        except Exception as e:
+            print(f"[EROARE] Nu s-au putut încărca medicamentele elderului: {e}")
 
-        # 3) If there *are* medications, add them all…
-        for med in medications:
-            item = MDLabel(
-                text=(
-                    f"[b]{med['denumire_comerciala']}[/b] – {med['forma_farmaceutica']} "
-                    f"({med['concentratie']})\n"
-                    f"Frecvență: {med['frecventa']}\n"
-                    f"Observații: {med.get('observatii', '')}"
-                ),
-                markup=True,
-                size_hint_y=None,
-                height=dp(100),
-                padding=(dp(10), dp(10))
-            )
-            container.add_widget(item)
+    
+    def view_medications_screen(self):
+        try:
+            self.ids.medications_list.clear_widgets()
 
-        # 4) Finally, switch to the “view_medications_care” screen
-        self.ids.health_manager.current = "view_medications_care"
+            medications = get_medications_for_elder(self.user_id)
+            if not medications:
+                self.ids.medications_list.add_widget(
+                    MDLabel(text="Nu există medicamente.", theme_text_color="Hint")
+                )
+                return
+
+            for med in medications:
+                # Add label + space between each field
+                self.ids.medications_list.add_widget(
+                    MDLabel(
+                        text=f"Denumire comercială: {med['denumire_comerciala']}",
+                        theme_text_color="Primary",
+                        size_hint_y=None,
+                        height=dp(24)
+                    )
+                )
+                self.ids.medications_list.add_widget(
+                    MDLabel(text="", size_hint_y=None, height=dp(4))
+                )
+
+                self.ids.medications_list.add_widget(
+                    MDLabel(
+                        text=f"Formă farmaceutică: {med['forma_farmaceutica']}",
+                        theme_text_color="Primary",
+                        size_hint_y=None,
+                        height=dp(24)
+                    )
+                )
+                self.ids.medications_list.add_widget(
+                    MDLabel(text="", size_hint_y=None, height=dp(4))
+                )
+
+                self.ids.medications_list.add_widget(
+                    MDLabel(
+                        text=f"Concentrație: {med['concentratie']}",
+                        theme_text_color="Primary",
+                        size_hint_y=None,
+                        height=dp(24)
+                    )
+                )
+                self.ids.medications_list.add_widget(
+                    MDLabel(text="", size_hint_y=None, height=dp(4))
+                )
+
+                self.ids.medications_list.add_widget(
+                    MDLabel(
+                        text=f"Frecvență: {med['frecventa']}",
+                        theme_text_color="Primary",
+                        size_hint_y=None,
+                        height=dp(24)
+                    )
+                )
+                self.ids.medications_list.add_widget(
+                    MDLabel(text="", size_hint_y=None, height=dp(0.5))
+                )
+
+                self.ids.medications_list.add_widget(
+                    MDLabel(
+                        text=f"Observații: {med['observatii']}",
+                        theme_text_color="Primary",
+                        size_hint_y=None,
+                        height=dp(24)
+                    )
+                )
+
+                # Spacer between medications
+                self.ids.medications_list.add_widget(
+                    MDLabel(text="", size_hint_y=None, height=dp(12))
+                )
+
+        except Exception as e:
+            print(f"[EROARE] Nu s-au putut încărca medicamentele elderului: {e}")
+
 
 
     def select_elder_med(self, elder):
@@ -1531,6 +1581,72 @@ class MainScreen(Screen):
                 c = self.ids[cid]
                 c.disabled = True
                 c.opacity  = 0
+
+    def save_any_user_update(self):
+        if not hasattr(self, "selected_user_for_edit") or not self.selected_user_for_edit:
+            toast("Niciun utilizator selectat.")
+            return
+
+        selected = self.selected_user_for_edit
+        username = self.ids.username_field.text.strip()
+        email = self.ids.email_field.text.strip()
+        password = self.ids.password_field.text.strip()
+
+        try:
+            update_user_profile(
+                user_id=selected["id"],
+                new_username=username,
+                new_email=email,
+                new_password=password if password else None
+            )
+            toast("Datele au fost actualizate.")
+        except Exception as e:
+            print("Eroare reală:", e)
+            toast("Eroare reală la salvare.")
+
+
+
+    def modify_accounts_screen(self):
+        self.ids.select_user_dropdown.text = ""
+        self.ids.username_field.text = ""
+        self.ids.email_field.text = ""
+        self.ids.password_field.text = ""
+
+        self.ids.health_manager.current = "edit_any_account"
+
+    def open_all_users_dropdown(self):
+        users = get_all_users()
+        self.all_users_list = users
+        menu_items = []
+
+        for user in users:
+            menu_items.append({
+                "text": f"{user['username']} ({user['role']})",
+                "viewclass": "OneLineListItem",
+                "height": dp(48),
+                "on_release": partial(self.select_user_for_edit, user)
+            })
+
+        if hasattr(self, "user_select_menu"):
+            self.user_select_menu.dismiss()
+
+        self.user_select_menu = MDDropdownMenu(
+            caller=self.ids.select_user_dropdown,
+            items=menu_items,
+            width_mult=4
+        )
+        self.user_select_menu.open()
+
+    def select_user_for_edit(self, user):
+        self.selected_user_for_edit = user
+        self.ids.select_user_dropdown.text = user["username"]
+        self.ids.username_field.text = user["username"]
+        self.ids.email_field.text = user["email"]
+
+    def go_to_view_medications(self):
+        self.view_medications_screen()
+        self.ids.health_manager.current = "view_medications"
+
 
 
 

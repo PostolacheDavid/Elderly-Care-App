@@ -31,6 +31,8 @@ from kivy.clock import Clock
 from kivymd.uix.textfield import MDTextField
 from plyer import utils
 from kivymd.toast import toast
+from plyer import storagepath
+from datetime import datetime
 
 class ElderControlItem(MDBoxLayout):
     # These must match the KV rule’s usage of root.name, root.goal, etc.
@@ -1163,12 +1165,34 @@ class MainScreen(Screen):
 
     def download_and_open(self, doc_id):
         row = get_document_data(doc_id)
-        if not row: return
+        if not row:
+            self.show_popup("Document not found.")
+            return
+
         fname, data = row
-        # Write to temp file and open via default app
-        tmp = os.path.join(os.getenv("TEMP"), fname)
-        with open(tmp, "wb") as f: f.write(data)
-        os.startfile(tmp)
+
+        # 1. Get a suitable Downloads directory
+        try:
+            download_dir = storagepath.get_downloads_dir()
+            if not download_dir:
+                raise Exception("Could not locate downloads directory.")
+        except Exception as e:
+            self.show_popup(f"Error locating download path:\n{e}")
+            return
+
+        # 2. Ensure filename is unique by appending timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        base, ext = os.path.splitext(fname)
+        final_name = f"{base}_{timestamp}{ext}"
+        final_path = os.path.join(download_dir, final_name)
+
+        # 3. Write file to disk
+        try:
+            with open(final_path, "wb") as f:
+                f.write(data)
+            toast(f"Downloaded to: {final_name}")
+        except Exception as e:
+            self.show_popup(f"Failed to save file:\n{e}")
 
     def open_doctor_exercises_screen(self):
         self.ids.health_manager.current = "doctor_exercises"

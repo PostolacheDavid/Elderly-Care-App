@@ -26,10 +26,10 @@ def register_admin(username, password):
         conn = mysql.connector.connect(**DB_CONFIG)
         cursor = conn.cursor()
 
-        # Hash the password
+        # Hashing pentru parola
         hashed_password = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
 
-        # Insert into users table
+        # Inserare in tabelul users
         query = "INSERT INTO users (username, password, role) VALUES (%s, %s, %s)"
         cursor.execute(query, (username, hashed_password, "admin"))
 
@@ -284,7 +284,7 @@ def add_medical_control(elder_id, doctor_id, name, goal, details, scheduled_at):
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
         cursor = conn.cursor()
-        # If scheduled_at is a datetime, convert to string:
+        #Daca scheduled_at este de tip datetime se converteste la string:
         if isinstance(scheduled_at, datetime):
             scheduled_str = scheduled_at.strftime("%Y-%m-%d %H:%M:%S")
         else:
@@ -304,7 +304,7 @@ def add_medical_control(elder_id, doctor_id, name, goal, details, scheduled_at):
         print(f"MySQL Error (add_medical_control): {e}")
         return False
 
-# ── Fetch all controls for a given elder ──
+#Obtinerea listei cu controale ale elder-ului
 def get_controls_for_elder(elder_id):
     """
     Return a list of dicts, each representing one control for the given elder_id:
@@ -331,7 +331,7 @@ def get_controls_for_elder(elder_id):
         print(f"MySQL Error (get_controls_for_elder): {e}")
         return []
 
-# ── Delete a control by its ID ──
+#Stergerea unui control
 def delete_medical_control(control_id):
     """
     Deletes the control with the given primary key.

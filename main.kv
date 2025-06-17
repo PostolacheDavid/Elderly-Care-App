@@ -35,7 +35,7 @@
         halign: "center"
 
     MDRaisedButton:
-        text: "Approve"
+        text: "Aprobare"
         size_hint: None, None
         size: dp(120), dp(40)
         pos_hint: {"center_x": 0.5}
@@ -86,7 +86,7 @@ ScreenManager:
 
                 MDLabel:
                     id: helper_label
-                    text: "Enter username"
+                    text: "Introduceți numele de utilizator"
                     theme_text_color: "Hint"
                     font_style: "Caption"
                     size_hint_y: None
@@ -120,7 +120,7 @@ ScreenManager:
 
                 MDLabel:
                     id: helper_label_pass
-                    text: "Enter password"
+                    text: "Introduceți parola"
                     theme_text_color: "Hint"
                     font_style: "Caption"
                     size_hint_y: None
@@ -139,19 +139,12 @@ ScreenManager:
             text_color: 1, 0, 0, 1
             halign: "center"
         MDRaisedButton:
-            text: "Login"
+            text: "Conectare"
             pos_hint: {"center_x": 0.5}
             size_hint_x: 0.8
             on_release: root.login()
         MDLabel:
-            text: "[ref=link]Forgot Password?[/ref]"
-            markup: True
-            theme_text_color: "Custom"
-            text_color: 120/255, 190/255, 220/255
-            halign: "center"
-            on_ref_press: root.forgot_password()
-        MDLabel:
-            text: "[ref=link]Don't have an account?[/ref]"
+            text: "[ref=link]Nu aveți un cont?[/ref]"
             markup: True
             theme_text_color: "Custom"
             text_color: 120/255, 190/255, 220/255
@@ -163,7 +156,7 @@ ScreenManager:
     md_bg_color: 0.827, 0.827, 0.827, 1
 
     MDFlatButton:
-        text: "<- Back"
+        text: "<- Înapoi"
         halign: "left"
         on_release:
             app.root.current = "login"
@@ -177,7 +170,7 @@ ScreenManager:
         pos_hint: {"center_x": 0.5, "center_y": 0.5}
 
         MDLabel:
-            text: "Create Doctor Account"
+            text: "Creare Cont Doctor"
             font_style: "H5"
             halign: "center"
             theme_text_color: "Custom"
@@ -194,7 +187,7 @@ ScreenManager:
             height: "60dp"
 
             MDLabel:
-                text: "Full Name"
+                text: "Numele complet"
                 size_hint_x: 0.4
                 halign: "right"
                 valign: "middle"
@@ -240,7 +233,7 @@ ScreenManager:
             height: "60dp"
 
             MDLabel:
-                text: "Password"
+                text: "Parola"
                 size_hint_x: 0.4
                 halign: "right"
                 valign: "middle"
@@ -264,7 +257,7 @@ ScreenManager:
             height: "60dp"
 
             MDLabel:
-                text: "Type Password Again"
+                text: "Tastați parola din nou"
                 size_hint_x: 0.4
                 halign: "right"
                 valign: "middle"
@@ -292,7 +285,7 @@ ScreenManager:
                 width: "0dp"
 
             MDLabel:
-                text: "Degree"
+                text: "Diploma"
                 font_size: "18sp"
                 size_hint_y: None
                 size_hint_x: None
@@ -308,12 +301,12 @@ ScreenManager:
                 width: "0dp"
 
             MDRaisedButton:
-                text: "Upload Photo"
+                text: "Incarcare Fotografie"
                 pos_hint: {"center_x": 0.5}
                 on_release: root.open_file_chooser()
             
         MDRaisedButton:
-            text: "Create Account"
+            text: "Creeaza Cont"
             pos_hint: {"center_x": 0.5}
             size_hint_x: 0.8
             on_release: root.submit_request()
@@ -336,7 +329,7 @@ ScreenManager:
                     MDTopAppBar:
                         md_bg_color: 0.827, 0.827, 0.827, 1
 
-                        # Left custom icon
+                        #custom icon stanga
                         AnchorLayout:
                             anchor_x: 'left'
                             anchor_y: 'center'
@@ -348,21 +341,21 @@ ScreenManager:
 
                         AnchorLayout:
                             size_hint_x: None
-                            width: dp(200)           # max width when expanded
+                            width: dp(200)           
                             anchor_x: 'left'
-                            pos_hint: {'x': .22}       # you can also use 'left' and tweak width/pos_hint
+                            pos_hint: {'x': .22}      
                             anchor_y: 'center'
                             MDTextField:
                                 id: top_search
                                 size_hint_x: 1
                                 width: self.parent.width
-                                opacity: 0            # start hidden
+                                opacity: 0            
                                 hint_text: "Search…"
                                 on_text: root.on_search_text(self.text)
                                 on_focus:
                                     if not self.focus: root.collapse_search()
 
-                        # Right custom icon
+                        #custom icon dreapta
                         AnchorLayout:
                             anchor_x: 'right'
                             anchor_y: 'bottom'
@@ -378,7 +371,7 @@ ScreenManager:
                         panel_color: 0.827, 0.827, 0.827, 1
                         MDBottomNavigationItem: #Butonul pentru account
                             name:"Account Screen"
-                            text:"Account"
+                            text:"Cont"
                             icon:"assets/icons/account.png"
                             MDScreen: #Ecran pentru atunci cand apesi butonul
                                 ScrollView:
@@ -392,13 +385,13 @@ ScreenManager:
                                         size_hint_y: None
                                         height: self.minimum_height
 
-                                        # Change Username
+                                        #Schimbare Username
                                         MDBoxLayout:
                                             size_hint_y: None
                                             height: dp(40)
                                             spacing: dp(8)
                                             MDRaisedButton:
-                                                text: "Change Username"
+                                                text: "Schimbați numele de utilizator"
                                                 on_release: root.toggle_username_field()
                                             Widget:
 
@@ -406,24 +399,24 @@ ScreenManager:
                                             id: account_username_container
                                             orientation: "vertical"
                                             size_hint_y: None
-                                            # collapse when disabled:
+                                            # collapse cand este dezactivat:
                                             height: 0 if self.disabled else self.minimum_height
                                             opacity: 0 if self.disabled else 1
                                             disabled: True
 
                                             MDTextField:
                                                 id: account_username
-                                                hint_text: "New username"
+                                                hint_text: "Nume de utilizator nou"
                                                 size_hint_x: 0.8
                                                 pos_hint: {"center_x": 0.5}
 
-                                        # Change Email
+                                     
                                         MDBoxLayout:
                                             size_hint_y: None
                                             height: dp(40)
                                             spacing: dp(8)
                                             MDRaisedButton:
-                                                text: "Change Email"
+                                                text: "Schimbați e-mailul"
                                                 on_release: root.toggle_email_field()
                                             Widget:
 
@@ -437,17 +430,17 @@ ScreenManager:
 
                                             MDTextField:
                                                 id: account_email
-                                                hint_text: "New email"
+                                                hint_text: "E-mail nou"
                                                 size_hint_x: 0.8
                                                 pos_hint: {"center_x": 0.5}
 
-                                        # Change Password
+                                  
                                         MDBoxLayout:
                                             size_hint_y: None
                                             height: dp(40)
                                             spacing: dp(8)
                                             MDRaisedButton:
-                                                text: "Change Password"
+                                                text: "Schimbaţi parola"
                                                 on_release: root.toggle_password_fields()
                                             Widget:
 
@@ -461,27 +454,27 @@ ScreenManager:
 
                                             MDTextField:
                                                 id: account_password
-                                                hint_text: "New password"
+                                                hint_text: "Parola nouă"
                                                 password: True
                                                 size_hint_x: 0.8
                                                 pos_hint: {"center_x": 0.5}
 
                                             MDTextField:
                                                 id: account_password_confirm
-                                                hint_text: "Confirm new password"
+                                                hint_text: "Confirmați noua parolă"
                                                 password: True
                                                 size_hint_x: 0.8
                                                 pos_hint: {"center_x": 0.5}
 
-                                        # Save Button
+                                 
                                         MDRaisedButton:
-                                            text: "Save Changes"
+                                            text: "Salvează"
                                             size_hint_x: 0.5
                                             pos_hint: {"center_x": 0.5}
                                             on_release: root.update_user_profile()
                         MDBottomNavigationItem:
                             name:"Health Screen"
-                            text:"Health"
+                            text:"Principal"
                             icon:"assets/icons/health.png"
                             MDScreen: #Ecran pentru atunci cand apesi butonul
                                 ScreenManager:
@@ -497,7 +490,7 @@ ScreenManager:
                                                 spacing:'20dp'
                                                 padding:'20dp'
                                                 MDLabel:
-                                                    text:"Doctor's Health Dashboard"
+                                                    text:"Bună ziua Doctore!"
                                                     font_style:"Subtitle2"
                                                 MDGridLayout:
                                                     cols:2
@@ -507,27 +500,27 @@ ScreenManager:
                                                     spacing:'15dp'
                                                     GridCard:
                                                         source:"assets/icons/pill.png"
-                                                        text:"Add Pacients Medicine"
+                                                        text:"Adăugați medicamente"
                                                         on_release: root.add_medication_screen()
                                                     GridCard:
                                                         source:"assets/icons/pill.png"
-                                                        text:"See Pacients Medicine"
+                                                        text:"Vezi Medicamentele Pacienților"
                                                         on_release: root.open_view_medications_doctor_screen()
                                                     GridCard:
                                                         source:"assets/icons/pacients.png"
-                                                        text:"Add Pacients"
+                                                        text:"Adăugați Pacienți"
                                                         on_release: root.create_elder_screen()
                                                     GridCard:
                                                         source:"assets/icons/caregiver.png"
-                                                        text:"Add Caregivers"
+                                                        text:"Adăugați îngrijitorii"
                                                         on_release: root.create_caregiver_screen()
                                                     GridCard:
                                                         source:"assets/icons/nurse.png"
-                                                        text:"Medical Controls"
+                                                        text:"Controale medicale"
                                                         on_release: root.open_doctor_controls_screen()
                                                     GridCard:
                                                         source:"assets/icons/medical_data.png"
-                                                        text:"Medical Data"
+                                                        text:"Date medicale"
                                                         on_release: root.open_doctor_docs_screen()
                                                     GridCard:
                                                         source:"assets/icons/fitness.png"
@@ -535,7 +528,7 @@ ScreenManager:
                                                         on_release: root.open_doctor_exercises_screen()
                                                     GridCard:
                                                         source: "assets/icons/settings.png"
-                                                        text: "Manage Accounts"
+                                                        text: "Gestionați Conturile"
                                                         on_release: root.open_manage_accounts()
                                     
                                     Screen:
@@ -551,13 +544,12 @@ ScreenManager:
 
                                                 MDTextField:
                                                     id: user_dropdown
-                                                    hint_text: "Select Elder or Caregiver"
+                                                    hint_text: "Selectează Elder sau Îngrijitor"
                                                     readonly: True
                                                     on_touch_down: if self.collide_point(*args[1].pos): root.open_manage_user_menu()
 
-                                                #--- Change Username ---
                                                 MDRaisedButton:
-                                                    text: "Change Username"
+                                                    text: "Schimbați numele de utilizator"
                                                     size_hint_x: 0.8
                                                     pos_hint: {"center_x": .5}
                                                     on_release: root.toggle_manage_username_field()
@@ -571,13 +563,12 @@ ScreenManager:
                                                     opacity: 0
                                                     MDTextField:
                                                         id: new_username
-                                                        hint_text: "New username"
+                                                        hint_text: "Nume de utilizator nou"
                                                         size_hint_x: 0.8
                                                         pos_hint: {"center_x": .5}
 
-                                                #--- Change Email ---
                                                 MDRaisedButton:
-                                                    text: "Change Email"
+                                                    text: "Schimbați e-mailul"
                                                     size_hint_x: 0.8
                                                     pos_hint: {"center_x": .5}
                                                     on_release: root.toggle_manage_email_field()
@@ -591,13 +582,12 @@ ScreenManager:
                                                     opacity: 0
                                                     MDTextField:
                                                         id: new_email
-                                                        hint_text: "New email"
+                                                        hint_text: "E-mail nou"
                                                         size_hint_x: 0.8
                                                         pos_hint: {"center_x": .5}
 
-                                                #--- Change Password ---
                                                 MDRaisedButton:
-                                                    text: "Change Password"
+                                                    text: "Schimbaţi parola"
                                                     size_hint_x: 0.8
                                                     pos_hint: {"center_x": .5}
                                                     on_release: root.toggle_manage_password_fields()
@@ -611,26 +601,25 @@ ScreenManager:
                                                     opacity: 0
                                                     MDTextField:
                                                         id: new_user_password
-                                                        hint_text: "New password"
+                                                        hint_text: "Parolă Nouă"
                                                         password: True
                                                         size_hint_x: 0.8
                                                         pos_hint: {"center_x": .5}
                                                     MDTextField:
                                                         id: confirm_user_password
-                                                        hint_text: "Confirm password"
+                                                        hint_text: "Confirmați parola"
                                                         password: True
                                                         size_hint_x: 0.8
                                                         pos_hint: {"center_x": .5}
 
-                                                #--- Apply / Back ---
                                                 MDRaisedButton:
-                                                    text: "Apply Changes"
+                                                    text: "Aplicați modificări"
                                                     size_hint_x: 0.8
                                                     pos_hint: {"center_x": .5}
                                                     on_release: root.apply_manage_user_changes()
 
                                                 MDRaisedButton:
-                                                    text: "Back"
+                                                    text: "Înapoi"
                                                     size_hint_x: 0.8
                                                     pos_hint: {"center_x": .5}
                                                     on_release: root.update_ui()
@@ -644,7 +633,7 @@ ScreenManager:
 
                                             MDTextField:
                                                 id: ex_elder_dropdown
-                                                hint_text: "Select Elder"
+                                                hint_text: "Selectează Elder"
                                                 readonly: True
                                                 size_hint_y: None
                                                 height: dp(56)
@@ -660,13 +649,13 @@ ScreenManager:
                                                     spacing: dp(8)
 
                                             MDRaisedButton:
-                                                text: "Add Exercise"
+                                                text: "Adaugă Exercițiu"
                                                 size_hint_y: None
                                                 height: dp(48)
                                                 on_release: root.open_add_exercise_dialog()
 
                                             MDRaisedButton:
-                                                text: "Back"
+                                                text: "Înapoi"
                                                 size_hint_y: None
                                                 height: dp(48)
                                                 on_release: root.update_ui()
@@ -680,7 +669,7 @@ ScreenManager:
 
                                             MDTextField:
                                                 id: doc_docs_elder_dropdown
-                                                hint_text: "Select Elder"
+                                                hint_text: "Selectează Elder"
                                                 readonly: True
                                                 size_hint_y: None 
                                                 height: dp(56)
@@ -696,13 +685,13 @@ ScreenManager:
                                                     spacing: dp(8)
 
                                             MDRaisedButton:
-                                                text: "Upload File"
+                                                text: "Încărcare Fișier"
                                                 size_hint_y: None 
                                                 height: dp(48)
                                                 on_release: root.open_file_chooser_for_doc()
 
                                             MDRaisedButton:
-                                                text: "Back"
+                                                text: "Înapoi"
                                                 size_hint_y: None 
                                                 height: dp(48)
                                                 on_release: root.update_ui()
@@ -721,7 +710,6 @@ ScreenManager:
                                                 padding: dp(10)
                                                 spacing: dp(10)
 
-                                                # Elder selector and form fields
                                                 MDTextField:
                                                     id: doctor_controls_elder_dropdown
                                                     hint_text: "Selectează pacientul"
@@ -733,21 +721,21 @@ ScreenManager:
 
                                                 MDTextField:
                                                     id: ctrl_name
-                                                    hint_text: "Control Name"
+                                                    hint_text: "Nume Control"
                                                     mode: "rectangle"
                                                     size_hint_y: None
                                                     height: dp(48)
 
                                                 MDTextField:
                                                     id: ctrl_goal
-                                                    hint_text: "Goal"
+                                                    hint_text: "Scop"
                                                     mode: "rectangle"
                                                     size_hint_y: None
                                                     height: dp(48)
 
                                                 MDTextField:
                                                     id: ctrl_details
-                                                    hint_text: "Details"
+                                                    hint_text: "Detalii"
                                                     mode: "rectangle"
                                                     multiline: True
                                                     size_hint_y: None
@@ -764,19 +752,16 @@ ScreenManager:
                                                     do_scroll_x: False
                                                     do_scroll_y: True
                                                     size_hint_y: None
-                                                    height: dp(200)   # or whatever fixed height you need
+                                                    height: dp(200) 
 
                                                     MDBoxLayout:
                                                         id: controls_list_doctor
                                                         orientation: "vertical"
-                                                        adaptive_height: True     # ← important!
+                                                        adaptive_height: True    
                                                         spacing: dp(10)
 
-                                                # Buttons immediately below the list
                                                 MDRaisedButton:
-                                                    text: "Save Control"
-                                                    #size_hint_y: None
-                                                    #height: dp(48)
+                                                    text: "Salvează"
                                                     on_release:
                                                         app.root.get_screen("main").submit_control(
                                                         root.selected_elder_for_control["id"],
@@ -788,9 +773,7 @@ ScreenManager:
                                                         )
 
                                                 MDRaisedButton:
-                                                    text: "Back"
-                                                    #size_hint_y: None
-                                                    #height: dp(48)
+                                                    text: "Înapoi"
                                                     on_release: root.update_ui()
 
 
@@ -806,7 +789,7 @@ ScreenManager:
                                                 height: self.minimum_height
 
                                                 MDLabel:
-                                                    text: "Create Elder Account"
+                                                    text: "Creați cont pentru bătrâni"
                                                     halign: "center"
                                                     font_style: "H5"
                                                     theme_text_color: "Custom"
@@ -814,32 +797,32 @@ ScreenManager:
 
                                                 MDTextField:
                                                     id: elder_full_name
-                                                    hint_text: "Full Name"
+                                                    hint_text: "Numele complet"
                                                     mode: "fill"
 
                                                 MDTextField:
                                                     id: elder_email
-                                                    hint_text: "Email"
+                                                    hint_text: "E-mail"
                                                     mode: "fill"
 
                                                 MDTextField:
                                                     id: elder_password
-                                                    hint_text: "Password"
+                                                    hint_text: "Parolă"
                                                     password: True
                                                     mode: "fill"
 
                                                 MDTextField:
                                                     id: elder_confirm_password
-                                                    hint_text: "Confirm Password"
+                                                    hint_text: "Confirmați parola"
                                                     password: True
                                                     mode: "fill"
 
                                                 MDRaisedButton:
-                                                    text: "Create Elder"
+                                                    text: "Creare Elder"
                                                     pos_hint: {"center_x": 0.5}
                                                     on_release: root.submit_elder()
                                                 MDRaisedButton:
-                                                    text: "Back"
+                                                    text: "Înapoi"
                                                     pos_hint: {"center_x": 0.5}
                                                     on_release: root.update_ui()
 
@@ -855,7 +838,7 @@ ScreenManager:
                                                 height: self.minimum_height
 
                                                 MDLabel:
-                                                    text: "Create Caregiver Account"
+                                                    text: "Creați cont de îngrijitor"
                                                     halign: "center"
                                                     font_style: "H5"
                                                     theme_text_color: "Custom"
@@ -863,49 +846,48 @@ ScreenManager:
 
                                                 MDTextField:
                                                     id: caregiver_full_name
-                                                    hint_text: "Full Name"
+                                                    hint_text: "Numele complet"
                                                     mode: "fill"
 
                                                 MDTextField:
                                                     id: caregiver_email
-                                                    hint_text: "Email"
+                                                    hint_text: "E-mail"
                                                     mode: "fill"
 
                                                 MDTextField:
                                                     id: caregiver_password
-                                                    hint_text: "Password"
+                                                    hint_text: "Parolă"
                                                     password: True
                                                     mode: "fill"
 
                                                 MDTextField:
                                                     id: caregiver_confirm_password
-                                                    hint_text: "Confirm Password"
+                                                    hint_text: "Confirmați parola"
                                                     password: True
                                                     mode: "fill"
 
                                                 MDTextField:
                                                     id: elder_field
-                                                    hint_text: "Select Elder"
-                                                    text: ""                # start with no text so hint_text is visible
-                                                    readonly: True          # prevent manual typing (selection only)
-                                                    icon_right: "chevron-down"   # optional: drop-down icon on the right
+                                                    hint_text: "Selectați Elder"
+                                                    text: ""                
+                                                    readonly: True          
+                                                    icon_right: "chevron-down"   
                                                     icon_right_color: app.theme_cls.primary_color
-                                                    pos_hint: {"center_x": 0.5, "top": 0.9}   # adjust positioning as needed
-                                                    size_hint_x: 0.8        # adjust width as needed
+                                                    pos_hint: {"center_x": 0.5, "top": 0.9}   
+                                                    size_hint_x: 0.8        
                                                     on_touch_down: if self.collide_point(*args[1].pos): root.open_elder_menu()
 
                                                 MDRaisedButton:
-                                                    text: "Create Caregiver"
+                                                    text: "Creare îngrijitor"
                                                     pos_hint: {"center_x": 0.5}
                                                     on_release: root.submit_caregiver()
                                                 MDRaisedButton:
-                                                    text: "Back"
+                                                    text: "Înapoi"
                                                     pos_hint: {"center_x": 0.5}
                                                     on_release: root.update_ui()
 
                                     Screen:
                                         name: "view_medications"
-                                        # remove the old on_pre_enter line; we'll call view_medications_screen() manually
 
                                         MDBoxLayout:
                                             orientation: "vertical"
@@ -920,7 +902,7 @@ ScreenManager:
                                                     spacing: dp(10)
 
                                             MDRaisedButton:
-                                                text: "Back"
+                                                text: "Înapoi"
                                                 pos_hint: {"center_x": 0.5}
                                                 on_release: root.update_ui()
 
@@ -1007,7 +989,7 @@ ScreenManager:
                                                     height: dp(56)
                                                     on_touch_down: if self.collide_point(*args[1].pos): root.open_elder_menu_for_doctor_view()
 
-                                                # Your meds list container
+                                                #meds list
                                                 MDBoxLayout:
                                                     id: doctor_meds_list
                                                     orientation: "vertical"
@@ -1033,7 +1015,7 @@ ScreenManager:
                                                 spacing:'20dp'
                                                 padding:'20dp'
                                                 MDLabel:
-                                                    text:"Elder's Health Dashboard"
+                                                    text:"Buna ziua!"
                                                     font_style:"Subtitle2"
                                                 MDGridLayout:
                                                     cols:2
@@ -1043,26 +1025,20 @@ ScreenManager:
                                                     spacing:'15dp'
                                                     GridCard:
                                                         source:"assets/icons/pill.png"
-                                                        text:"Medicine"
+                                                        text:"Medicamente"
                                                         on_release: root.go_to_view_medications()
                                                     GridCard:
                                                         source:"assets/icons/nurse.png"
-                                                        text:"Appointments"
+                                                        text:"Controale Medicale"
                                                         on_release: root.view_controls_for_elder()
                                                     GridCard:
                                                         source:"assets/icons/medical_data.png"
-                                                        text:"Medical Data"
+                                                        text:"Date medicale"
                                                         on_release: root.view_documents_screen()
                                                     GridCard:
                                                         source:"assets/icons/fitness.png"
                                                         text:"Fitness"
                                                         on_release: root.view_exercises_screen()
-                                                    #GridCard:
-                                                        #source:"assets/icons/notification.png"
-                                                        #text:"Notifications"
-                                                    #GridCard:
-                                                        #source:"assets/icons/chat.png"
-                                                        #text:"Chat"
 
                                     Screen:
                                         name: "view_exercises"
@@ -1081,7 +1057,7 @@ ScreenManager:
                                                     spacing: dp(8)
 
                                             MDRaisedButton:
-                                                text: "Back"
+                                                text: "Înapoi"
                                                 size_hint_y: None
                                                 height: dp(48)
                                                 on_release: root.update_ui()
@@ -1103,7 +1079,7 @@ ScreenManager:
                                                     spacing: dp(8)
 
                                             MDRaisedButton:
-                                                text: "Back"
+                                                text: "Înapoi"
                                                 size_hint_y: None
                                                 height: dp(48)
                                                 on_release: root.update_ui()
@@ -1146,7 +1122,7 @@ ScreenManager:
                                                 spacing:'20dp'
                                                 padding:'20dp'
                                                 MDLabel:
-                                                    text:"Elder's Health Dashboard"
+                                                    text:"Bună ziua!"
                                                     font_style:"Subtitle2"
                                                 MDGridLayout:
                                                     cols:2
@@ -1156,15 +1132,15 @@ ScreenManager:
                                                     spacing:'15dp'
                                                     GridCard:
                                                         source:"assets/icons/pill.png"
-                                                        text:"Medicine"
+                                                        text:"Medicamente"
                                                         on_release: root.load_elder_medications_for_caregiver()
                                                     GridCard:
                                                         source:"assets/icons/nurse.png"
-                                                        text:"Medical controls"
+                                                        text:"Controale Medicale"
                                                         on_release: root.view_controls_for_caregiver()
                                                     GridCard:
                                                         source:"assets/icons/medical_data.png"
-                                                        text:"Medical Data"
+                                                        text:"Date Medicale"
                                                         on_release: root.view_documents_screen()
                                                     GridCard:
                                                         source:"assets/icons/fitness.png"
@@ -1188,7 +1164,7 @@ ScreenManager:
                                                     spacing: dp(10)
 
                                             MDRaisedButton:
-                                                text: "Back"
+                                                text: "Înapoi"
                                                 pos_hint: {"center_x": 0.5}
                                                 on_release: root.update_ui()
                                                     
@@ -1212,11 +1188,11 @@ ScreenManager:
                                                     spacing:'15dp'
                                                     GridCard:
                                                         source:"assets/icons/padlock.png"
-                                                        text:"Approve Accounts"
+                                                        text:"Aprobare Conturi"
                                                         on_release: root.approve_accounts_screen()
                                                     GridCard:
                                                         source:"assets/icons/account.png"
-                                                        text:"Modify Accounts"
+                                                        text:"Modificare conturi"
                                                         on_release: root.modify_accounts_screen()
                                     Screen:
                                         name: "admin_approve_accounts"
@@ -1230,7 +1206,7 @@ ScreenManager:
                                                 size_hint_y: None
                                                 height: self.minimum_height
                                                 MDRaisedButton:
-                                                    text: "Back"
+                                                    text: "Înapoi"
                                                     pos_hint: {"center_x": 0.5}
                                                     on_release: root.update_ui()
 
@@ -1273,27 +1249,10 @@ ScreenManager:
                                                         on_release: root.save_any_user_update()
                                                         
                                                     MDRaisedButton:
-                                                        text: "Back"
+                                                        text: "Înapoi"
                                                         pos_hint: {"center_x": 0.5}
                                                         on_release: root.update_ui()
                                                     
-
-
-
-                        #MDBottomNavigationItem:
-                            #name:"Emergency Screen"
-                            #text:"Emergency"
-                            #icon:"assets/icons/emergency.png"
-                            #MDScreen: #Ecran pentru atunci cand apesi butonul
-                                #MDBoxLayout:
-                                    #pos_hint:{'center_x':0.5, 'center_y':0.5}
-                                    #orientation:'vertical'
-                                    #size_hint_y: 0.4
-                                    #size_hint_x: 0.4
-                                    #spacing: "40dp"
-                                    #MDLabel:
-                                        #text: "Welcome to the Emergency Screen!"
-                                        #halign: "center"
         
         MDNavigationDrawer:
             id: nav_drawer
@@ -1306,7 +1265,7 @@ ScreenManager:
                 spacing: "15dp"
 
                 MDLabel:
-                    text: "Menu"
+                    text: "Meniu"
                     theme_text_color: "Custom"
                     text_color: 120/255, 190/255, 220/255
                     font_style: "H6"
@@ -1321,7 +1280,7 @@ ScreenManager:
             
                 
                 MDFlatButton:
-                    text: "Home"
+                    text: "Acasă"
                     on_release:
                         app.close_drawer()
 
@@ -1329,13 +1288,13 @@ ScreenManager:
                     height: "1dp"
                 
                 MDFlatButton:
-                    text: "Logout"
+                    text: "Deconectare"
                     on_release:
                         app.show_logout_dialog()
 
 <DoctorMedItem>:
     size_hint_y: None
-    height: dp(100)            # or whichever height makes sense
+    height: dp(100)          
     orientation: "vertical"
     padding: dp(10)
     spacing: dp(6)
@@ -1362,7 +1321,6 @@ ScreenManager:
         size: dp(80), dp(36)
         pos_hint: {"center_x": 0.5}
         on_release:
-            # Call MainScreen.delete_medication_dialog, passing the med_id of this item
             app.root.get_screen("main").delete_medication_dialog(root.med_id)
 
 <GridCard@MDCard>:
@@ -1375,13 +1333,13 @@ ScreenManager:
     padding: '20dp'
     spacing: '20dp'
     size_hint_y: None
-    height: '150dp'  # Slightly increased card height for spacing
+    height: '150dp'
     elevation: 1
 
     Image:
         source: root.source
         size_hint_y: None
-        height: dp(35)  # ← Increased icon size (adjust to taste)
+        height: dp(35)
         allow_stretch: True
         keep_ratio: True
 
@@ -1457,8 +1415,6 @@ ScreenManager:
         size_hint_y: None
         height: dp(80)
 
-    # We use two separate MDTextFields for date and time inputs; you can
-    # replace them with MDDatePicker / MDTimePicker if you want a popup.
     MDTextField:
         id: ctrl_date
         hint_text: "Data (YYYY-MM-DD)"
@@ -1529,7 +1485,7 @@ ScreenManager:
     name: ""
     goal: ""
     details: ""
-    scheduled_at: ""    # “YYYY-MM-DD HH:MM:SS”
+    scheduled_at: ""    #YYYY-MM-DD HH:MM:SS
 
     orientation: "vertical"
     size_hint_y: None
@@ -1568,7 +1524,7 @@ ScreenManager:
     spacing: dp(6)
 
     MDLabel:
-        text: "[b]" + root.title + "[/b]"
+        text: root.title
         markup: True
 
     MDLabel:

@@ -147,16 +147,16 @@ def create_linked_user(full_name, email, password, role, doctor_id, elder_id=Non
 
         if role == "caregiver":
             query = """
-                INSERT INTO users (username, password, role, doctor_id, elder_id)
+                INSERT INTO users (username, email, password, role, doctor_id, elder_id)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """
+            cursor.execute(query, (full_name, email, hashed_password, role, doctor_id, elder_id))
+        else:  # elder
+            query = """
+                INSERT INTO users (username, email, password, role, doctor_id)
                 VALUES (%s, %s, %s, %s, %s)
             """
-            cursor.execute(query, (email, hashed_password, role, doctor_id, elder_id))
-        else:
-            query = """
-                INSERT INTO users (username, password, role, doctor_id)
-                VALUES (%s, %s, %s, %s)
-            """
-            cursor.execute(query, (email, hashed_password, role, doctor_id))
+            cursor.execute(query, (full_name, email, hashed_password, role, doctor_id))
 
         conn.commit()
         cursor.close()
@@ -166,7 +166,7 @@ def create_linked_user(full_name, email, password, role, doctor_id, elder_id=Non
     except mysql.connector.Error as e:
         print(f"MySQL Error: {e}")
         return False
-
+    
 def get_elders_by_doctor(doctor_id):
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
@@ -568,3 +568,42 @@ def get_all_users():
     except mysql.connector.Error as e:
         print(f"MySQL Error (get_all_users): {e}")
         return []
+    
+def reject_doctor(doctor_id):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM pending_doctors WHERE id = %s", (doctor_id,))
+        conn.commit()
+        conn.close()
+        return True
+    except mysql.connector.Error as e:
+        print(f"MySQL Error: {e}")
+        return False
+    
+def delete_user_by_id(user_id):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        conn.commit()
+        conn.close()
+        return True
+    except mysql.connector.Error as e:
+        print(f"MySQL Error: {e}")
+        return False
+
+def get_users_by_doctor_id(doctor_id):
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        cursor = conn.cursor(dictionary=True)
+        query = "SELECT id, username, role FROM users WHERE doctor_id = %s"
+        cursor.execute(query, (doctor_id,))
+        results = cursor.fetchall()
+        return results
+    except mysql.connector.Error as e:
+        print(f"MySQL Error: {e}")
+        return []
+    finally:
+        cursor.close()
+        conn.close()

@@ -1,48 +1,72 @@
-# Elderly Care App
+# 🧓 Aplicație de Îngrijire a Vârstnicilor
 
-A role-based desktop application developed using **KivyMD** and **MySQL**, designed to assist elderly individuals, doctors, and caregivers in managing medical and daily needs efficiently.
+Aceasta este o aplicație mobilă dezvoltată cu **KivyMD** și **Python**, destinată gestionării informațiilor medicale pentru persoane vârstnice. Aplicația oferă un sistem de autentificare pe roluri (admin, doctor, îngrijitor, vârstnic) și facilitează comunicarea și organizarea între aceste categorii de utilizatori.
 
-## 🧠 About the Project
+---
 
-This project was developed as a final-year college project. The goal is to provide an intuitive, user-friendly interface that allows:
+## 🛠️ Funcționalități principale
 
-- Doctors to manage patients and access health data.
-- Elderly users to view medical info and appointments.
-- Caregivers to support elders with reminders and communication.
-- Admins to oversee the system.
+- **Autentificare și înregistrare pe roluri**: doctori, îngrijitori, vârstnici și admini.
+- **Aprobarea cererilor de cont pentru doctori** (efectuată de către admin).
+- **Creare de conturi de îngrijitor și vârstnic** de către doctor.
+- **Adăugarea și vizualizarea medicației** pentru vârstnici.
+- **Încărcare de documente medicale** (ex: fișe PDF, rețete, analize).
+- **Programarea controalelor medicale** și exerciții recomandate.
+- **Vizualizarea fișierelor și informațiilor de sănătate** pentru fiecare rol.
+- **Suport pentru descărcarea fișierelor pe Android și Windows.**
 
-## 🛠️ Technologies Used
+---
 
-- **Python 3.11+**
-- **Kivy** & **KivyMD** (for GUI)
-- **MySQL** (for storing users and data)
-- **Plyer** (for file chooser functionality)
-- **bcrypt** (for secure password hashing)
+## 📱 Platformă
 
-## 🔐 Roles
+- Testată și compatibilă cu **Android** (via Buildozer) și **Windows** (versiune desktop Python).
+- Gestionarea permisiunilor de fișiere pentru Android este implementată.
 
-- **Doctor**
-- **Elder**
-- **Caregiver**
-- **Admin**
+---
 
-Each role sees a different dashboard and UI components relevant to their permissions.
+## ▶️ Cum rulezi aplicația
 
-## 🚀 Features
+### 🔹 Pe Windows
 
-- Role-based login system
-- Doctor account creation with diploma upload
-- Secure password storage using bcrypt
-- File upload using Plyer (Windows tested)
-- Top and bottom navigation bars consistent across screens
-- Pop-up dialogs for logout confirmation
-- Custom file chooser for selecting profile documents
-- Responsive and minimalist UI
+1. Instalează dependențele:
 
-## 🧪 How to Run
-
-1. Clone the repo
-2. Install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
+
+2. Rulează aplicația:
+   ```bash
+   python main.py
+   ```
+
+### 🔹 Pe Android
+
+1. Asigură-te că ai `buildozer` configurat (pe Linux).
+2. Compilează aplicația:
+   ```bash
+   buildozer -v android debug
+   buildozer android deploy run
+   ```
+
+---
+
+## 💾 Bază de date
+
+- Aplicația utilizează o bază de date **MySQL**.
+- Datele sunt stocate în tabele separate pentru utilizatori, medicații, documente, exerciții și controale medicale.
+- Setările pentru conexiune se găsesc în fișierul `database.py`, în dicționarul `DB_CONFIG`.
+
+---
+
+## 🎨 Iconițe
+
+Toate iconițele folosite în aplicație sunt obținute de pe [Icons8](https://icons8.com/icons).  
+Mulțumim pentru resursele gratuite oferite!
+
+---
+
+## 🔒 Securitate
+
+- Parolele sunt criptate cu **bcrypt** înainte de a fi stocate în baza de date.
+- Verificarea autentificării se face în mod securizat.
+- Accesul la funcționalități este controlat pe baza rolului utilizatorului.

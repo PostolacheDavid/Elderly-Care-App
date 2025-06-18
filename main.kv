@@ -34,13 +34,27 @@
         theme_text_color: "Secondary"
         halign: "center"
 
-    MDRaisedButton:
-        text: "Aprobare"
-        size_hint: None, None
-        size: dp(120), dp(40)
+    BoxLayout:
+        orientation: "horizontal"
+        spacing: dp(10)
+        size_hint_y: None
+        height: dp(40)
         pos_hint: {"center_x": 0.5}
-        on_release:
-            app.root.get_screen("main").approve_account(root.doctor_id)
+
+        MDRaisedButton:
+            text: "Aprobare"
+            size_hint_x: None
+            width: dp(120)
+            on_release:
+                app.root.get_screen("main").approve_account(root.doctor_id)
+
+        MDRaisedButton:
+            text: "Dezaprobare"
+            size_hint_x: None
+            width: dp(120)
+            md_bg_color: 1, 0.3, 0.3, 1
+            on_release:
+                app.root.get_screen("main").reject_account(root.doctor_id)
 
 ScreenManager:
     LoginScreen:
@@ -76,7 +90,7 @@ ScreenManager:
                 icon: "assets/icons/account.png"
                 size_hint_x: None
                 width: "40dp"
-                pos_hint: {"center_y":1.6}
+                pos_hint: {"center_y":0.6}
 
             MDBoxLayout:
                 orientation: "vertical"
@@ -110,7 +124,7 @@ ScreenManager:
                 icon: "assets/icons/lock.png"
                 size_hint_x: None
                 width: "40dp"
-                pos_hint: {"center_y":1.6}
+                pos_hint: {"center_y":0.6}
 
             MDBoxLayout:
                 orientation: "vertical"
@@ -1178,7 +1192,7 @@ ScreenManager:
                                                 spacing:'20dp'
                                                 padding:'20dp'
                                                 MDLabel:
-                                                    text:"Elder's Health Dashboard"
+                                                    text:"Bine ai venit in contul de admin"
                                                     font_style:"Subtitle2"
                                                 MDGridLayout:
                                                     cols:2
@@ -1205,10 +1219,10 @@ ScreenManager:
                                                 padding: "20dp"
                                                 size_hint_y: None
                                                 height: self.minimum_height
-                                                MDRaisedButton:
-                                                    text: "Înapoi"
-                                                    pos_hint: {"center_x": 0.5}
-                                                    on_release: root.update_ui()
+                                        MDRaisedButton:
+                                            text: "Înapoi"
+                                            pos_hint: {"center_x": 0.5}
+                                            on_release: root.update_ui()
 
                                     MDScreen:
                                         name: "edit_any_account"
@@ -1247,6 +1261,15 @@ ScreenManager:
                                                     MDRaisedButton:
                                                         text: "Salvează modificările"
                                                         on_release: root.save_any_user_update()
+                                                    
+                                                    MDRaisedButton:
+                                                        text: "Șterge contul"
+                                                        md_bg_color: 1, 0.3, 0.3, 1
+                                                        
+                                                        size_hint_x: None
+                                                        width: dp(150)
+                                                        on_release:
+                                                            app.root.get_screen("main").delete_selected_user()
                                                         
                                                     MDRaisedButton:
                                                         text: "Înapoi"

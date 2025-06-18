@@ -6,7 +6,7 @@ from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.lang import Builder
 from kivy.properties import StringProperty, NumericProperty, ObjectProperty
 from database import check_user
-from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor, add_elder_medication, get_medications_for_elder, get_elder_id_for_caregiver, delete_elder_medication, get_medications_with_id_for_elder, add_medical_control, get_controls_for_elder, delete_medical_control, add_elder_document, get_documents_for_elder, get_document_data, delete_elder_document, add_exercise_for_elder, get_exercises_for_elder, update_user_profile, get_user_email, update_linked_user_password, get_caregivers_by_doctor, update_linked_user_profile, get_all_users
+from database import submit_doctor_request, get_pending_doctors, approve_doctor, create_linked_user, get_elders_by_doctor, add_elder_medication, get_medications_for_elder, get_elder_id_for_caregiver, delete_elder_medication, get_medications_with_id_for_elder, add_medical_control, get_controls_for_elder, delete_medical_control, add_elder_document, get_documents_for_elder, get_document_data, delete_elder_document, add_exercise_for_elder, get_exercises_for_elder, update_user_profile, get_user_email, update_linked_user_password, get_caregivers_by_doctor, update_linked_user_profile, get_all_users, reject_doctor, delete_user_by_id, get_users_by_doctor_id
 from kivymd.uix.navigationdrawer import MDNavigationLayout, MDNavigationDrawer
 from kivymd.uix.dialog import MDDialog
 from kivymd.uix.button import MDFlatButton
@@ -281,7 +281,8 @@ class DoctorRegisterScreen(Screen):
 class MainScreen(Screen):
     user_role = StringProperty("")
     user_id = NumericProperty(0)
-    selected_user_for_edit = ObjectProperty(None)
+    selected_user_for_edit = ObjectProperty(None, allownone=True)
+    selected_user_id = None
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -414,6 +415,13 @@ class MainScreen(Screen):
             self.approve_accounts_screen()
         else:
             print("Approval failed.")
+
+    def reject_account(self, doctor_id):
+        if reject_doctor(doctor_id):
+            toast("Cererea a fost respinsă.")
+            self.approve_accounts_screen()
+        else:
+            toast("Eroare la respingerea cererii.")
 
     def approve_accounts_screen(self):
         self.ids.health_manager.current = "admin_approve_accounts"
@@ -1677,9 +1685,48 @@ class MainScreen(Screen):
         self.view_medications_screen()
         self.ids.health_manager.current = "view_medications"
 
+    def delete_selected_user(self):
+        if self.selected_user_for_edit:
+            user_id = self.selected_user_for_edit["id"]
+            role = self.selected_user_for_edit["role"]
 
+            if role == "doctor":
+                associated_users = get_users_by_doctor_id(user_id)
+                if associated_users:
+                    # Construim lista de asociați
+                    info = "\n".join([f"{u['username']} ({u['role']})" for u in associated_users])
+                    self.show_association_popup(info)
+                    return
 
+            if delete_user_by_id(user_id):
+                toast("Contul a fost șters.")
+                self.open_all_users_dropdown()
+                self.ids.username_field.text = ""
+                self.ids.email_field.text = ""
+                self.ids.select_user_dropdown.text = "Selectează utilizator"
+                self.selected_user_for_edit = None
+            else:
+                toast("Eroare la ștergere cont.")
+        else:
+            toast("Selectează un utilizator mai întâi.")
 
+    def show_association_popup(self, associated_info):
+        if hasattr(self, "dialog") and self.dialog:
+            self.dialog.dismiss()
+
+        self.dialog = MDDialog(
+            title="Conturi asociate existente",
+            text=f"Nu poți șterge acest doctor deoarece are următoarele conturi asociate:\n\n{associated_info}\n\nȘterge-le mai întâi.",
+            buttons=[
+                MDFlatButton(
+                    text="OK",
+                    on_release=lambda x: self.dialog.dismiss()
+                )
+            ]
+        )
+        self.dialog.open()
+
+            
 
 class MainApp(MDApp):
 
